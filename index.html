@@ -27,6 +27,9 @@ main{min-height:0;display:grid;grid-template-columns:minmax(180px,14vw) minmax(0
 aside{font-size:clamp(12px,.9vw,16px);line-height:1.75;color:var(--muted)}
 aside p{border-left:1px solid var(--line);padding-left:12px;margin:clamp(12px,2vh,24px) 0}
 aside b{display:inline-block;color:var(--accent);font-size:clamp(14px,1.05vw,19px);font-weight:400;margin-top:2px}
+#rightTelemetry{text-align:right}
+#rightTelemetry p{border-left:0;border-right:1px solid var(--line);padding-left:0;padding-right:12px}
+#rightTelemetry b{text-align:right}
 .center{position:relative;min-width:0;min-height:0;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
 .default-view{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
 .cosmos{position:relative;width:min(33vh,335px);height:min(33vh,335px);min-width:220px;min-height:220px;display:grid;place-items:center;transition:filter .5s ease,transform .5s ease}
@@ -50,8 +53,8 @@ h1.hero{font-size:clamp(28px,2.8vw,52px);line-height:1.08;letter-spacing:.15em;f
 button{font:inherit;cursor:pointer;background:rgba(8,22,43,.92);color:var(--accent);border:1px solid rgba(140,200,255,.52);padding:11px 16px;letter-spacing:.08em;font-size:clamp(12px,.9vw,15px)}
 button:hover{border-color:var(--accent);color:#fff}
 .phase-note{font-size:clamp(11px,.82vw,14px);color:var(--muted);letter-spacing:.08em}
-.phase2-log{width:min(900px,76vw);height:92px;margin-top:5px;overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;text-align:left;padding:0 8px}
-.phase2-log .logline{color:#ff9fac;font-size:clamp(11px,.78vw,14px);line-height:1.45;animation:riseFade 5.5s linear forwards;text-shadow:0 0 10px rgba(255,60,95,.16)}
+.phase2-log{width:min(900px,76vw);height:96px;margin-top:5px;overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;text-align:left;padding:0 8px}
+.phase2-log .logline{color:#ff9fac;font-size:clamp(11px,.78vw,14px);line-height:1.45;animation:riseFade 6.2s linear forwards;text-shadow:0 0 10px rgba(255,60,95,.16);white-space:nowrap;overflow:hidden;display:block;max-width:100%}
 .hidden{display:none!important}
 
 /* Phase 2 containment */
@@ -65,14 +68,15 @@ body.phase2 .status b{color:#ffc0ca}
 /* Cascade dedicated view */
 .cascade-view{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .cascade-heading{margin-bottom:4px;color:#ffbbc5;font-size:clamp(13px,1vw,18px);letter-spacing:.18em}
-.cascade-grid{width:min(1150px,86vw);display:grid;grid-template-columns:minmax(190px,1fr) minmax(280px,390px) minmax(190px,1fr);gap:18px;align-items:center}
+.cascade-grid{width:min(1100px,82vw);display:grid;grid-template-columns:minmax(170px,1fr) minmax(320px,430px) minmax(170px,1fr);gap:26px;align-items:center}
 .cascade-log{height:260px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;padding:8px;border-left:1px solid rgba(255,70,96,.22)}
-.cascade-log.right{text-align:right;border-left:0;border-right:1px solid rgba(255,70,96,.22)}
-.cascade-log .logline{font-size:clamp(10px,.74vw,13px);line-height:1.4;color:#ff9cac;animation:sideFade 5.2s linear forwards}
-.crisis-center{display:flex;flex-direction:column;align-items:center}
+.cascade-log.right{text-align:right;border-left:0;border-right:1px solid rgba(255,70,96,.22);align-items:flex-end}
+.cascade-log .logline{font-size:clamp(10px,.74vw,13px);line-height:1.4;color:#ff9cac;animation:sideFade 6.4s linear forwards;white-space:nowrap;overflow:hidden;display:block;max-width:100%}
+.crisis-center{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px}
+.crisis-center > *:not(.crisis-cosmos){position:relative;z-index:2}
 .countdown-label{font-size:clamp(11px,.8vw,14px);letter-spacing:.18em;color:#ff94a5}
 .countdown{color:var(--critical);font-size:clamp(52px,5.7vw,96px);letter-spacing:.08em;line-height:1;margin:0 0 6px;text-shadow:0 0 28px rgba(255,55,83,.38)}
-.crisis-cosmos{position:relative;width:250px;height:250px;display:grid;place-items:center}
+.crisis-cosmos{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:360px;height:360px;display:grid;place-items:center;z-index:0;opacity:.88;pointer-events:none}
 .crisis-ring{position:absolute;border:1px solid rgba(255,94,112,.72);border-radius:50%;transition:transform .12s linear,box-shadow .12s linear}
 .cr1{width:96%;height:96%;border-style:solid}
 .cr2{width:74%;height:74%;border-style:dashed}
@@ -363,13 +367,14 @@ function render(){
 
   if(s==="RESOLVED"){
     document.body.classList.add("resolved");
-    text("eyebrow","CONVERGENCE RESTORED");
-    text("title","MERRY CHRISTMAS");
+    text("eyebrow","DISTRIBUTED CONVERGENCE ESTABLISHED");
+    $("title").innerHTML="CONVERGENCE RESTORED<br>MERRY CHRISTMAS";
     text("subtitle","ALL TIMELINES COEXIST");
     text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
     text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
     show("resolvedCard",true);
-    stopAlarmLoop();
+    stopSiren();
+    stopVoiceLoop();
   }
 
   updateAudioState(s);
@@ -439,18 +444,25 @@ const PHASE2_LINES=[
  "SPACETIME NODE C-2026.12 RESPONSE DELAY",
  "MULTIPLE STABLE CONFIGURATIONS REMAIN"
 ];
-function appendLog(container,line){
+function appendTypedLog(container,line,side="left"){
   const d=document.createElement("div");d.className="logline";
-  d.textContent=`[${new Date().toLocaleTimeString("it-IT",{hour12:false})}.${Math.floor(Math.random()*999).toString().padStart(3,"0")}] ${line}`;
+  if(side==="right")d.style.textAlign="right";
   container.appendChild(d);
-  setTimeout(()=>d.remove(),5400);
+  const full=`[${new Date().toLocaleTimeString("it-IT",{hour12:false})}.${Math.floor(Math.random()*999).toString().padStart(3,"0")}] ${line}`;
+  let i=0;
+  const typer=setInterval(()=>{
+    i++;
+    d.textContent=full.slice(0,i);
+    if(i>=full.length)clearInterval(typer);
+  }, game.state==="CASCADE"?14:18);
+  setTimeout(()=>{clearInterval(typer);d.remove();},6500);
 }
 function startPhase2Logs(){
   if(phase2LogHandle)return;
-  appendLog($("phase2Log"),PHASE2_LINES[0]);
+  appendTypedLog($("phase2Log"),PHASE2_LINES[0]);
   phase2LogHandle=setInterval(()=>{
     if(game.state!=="PHASE2")return;
-    appendLog($("phase2Log"),PHASE2_LINES[Math.floor(Math.random()*PHASE2_LINES.length)]);
+    appendTypedLog($("phase2Log"),PHASE2_LINES[Math.floor(Math.random()*PHASE2_LINES.length)]);
     burstFrom("normalCore",2+Math.floor(Math.random()*4));
     if(Math.random()<.35)audioEvent("plasma");
   },1050);
@@ -478,12 +490,12 @@ const CASCADE_RIGHT=[
 ];
 function startCascade(){
   if(!cascadeLogHandle){
-    appendLog($("cascadeLogLeft"),CASCADE_LEFT[0]);
-    appendLog($("cascadeLogRight"),CASCADE_RIGHT[0]);
+    appendTypedLog($("cascadeLogLeft"),CASCADE_LEFT[0],"left");
+    appendTypedLog($("cascadeLogRight"),CASCADE_RIGHT[0],"right");
     cascadeLogHandle=setInterval(()=>{
       if(game.state!=="CASCADE")return;
       const left=Math.random()<.5;
-      appendLog(left?$("cascadeLogLeft"):$("cascadeLogRight"),left?CASCADE_LEFT[Math.floor(Math.random()*CASCADE_LEFT.length)]:CASCADE_RIGHT[Math.floor(Math.random()*CASCADE_RIGHT.length)]);
+      appendTypedLog(left?$("cascadeLogLeft"):$("cascadeLogRight"),left?CASCADE_LEFT[Math.floor(Math.random()*CASCADE_LEFT.length)]:CASCADE_RIGHT[Math.floor(Math.random()*CASCADE_RIGHT.length)]);
     },720);
   }
   startTimer();
@@ -501,16 +513,15 @@ function startTimer(){
     text("timer",`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`);
 
     const danger=1-fraction;
-    const pulse=Math.sin(Date.now()/230)*.06;
-    const scale=1+danger*1.15+pulse;
+    const pulse=Math.sin(Date.now()/230)*.08;
+    const scale=1.15+danger*2.1+pulse;
     $("crisisCore").style.transform=`scale(${scale})`;
-    $("crisisCore").style.filter=`drop-shadow(0 0 ${25+danger*55}px rgba(255,${Math.round(75-danger*50)},25,.98)) saturate(${1+danger*1.5})`;
-    $("cr1").style.transform=`scale(${1 + Math.sin(Date.now()/420)*(.035+danger*.06) - danger*.04})`;
-    $("cr2").style.transform=`scale(${1 + Math.sin(Date.now()/330+1)*(.05+danger*.08) - danger*.08})`;
-    $("cr3").style.transform=`scale(${1 + Math.sin(Date.now()/260+2)*(.07+danger*.1) - danger*.12})`;
+    $("crisisCore").style.filter=`drop-shadow(0 0 ${35+danger*80}px rgba(255,${Math.round(75-danger*50)},25,.98)) saturate(${1+danger*1.8})`;
+    $("cr1").style.transform=`scale(${1.02 + Math.sin(Date.now()/420)*(.045+danger*.08) - danger*.06})`;
+    $("cr2").style.transform=`scale(${1.0 + Math.sin(Date.now()/330+1)*(.07+danger*.1) - danger*.1})`;
+    $("cr3").style.transform=`scale(${0.98 + Math.sin(Date.now()/260+2)*(.09+danger*.12) - danger*.14})`;
 
     if(Math.random()<(0.03+danger*.11))burstFrom("crisisCore",2+Math.floor(danger*6));
-    setAlarmUrgency(danger);
   };
   tick();timerHandle=setInterval(tick,120);
 }
@@ -552,16 +563,30 @@ function draw(){
 
 /* audio */
 let audioCtx=null,masterGain=null,humGain=null,hum1=null,hum2=null;
-let audioReady=false,muted=false,alarmInterval=null,currentUrgency=0;
+let sirenGain=null,sirenA=null,sirenB=null,sirenSweepHandle=null,sirenStopTimeout=null;
+let audioReady=false,muted=false,voiceLoopHandle=null;
 
 function initAudio(){
   if(audioReady){audioCtx.resume();return}
   audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  masterGain=audioCtx.createGain();masterGain.gain.value=.20;masterGain.connect(audioCtx.destination);
+  masterGain=audioCtx.createGain();masterGain.gain.value=.22;masterGain.connect(audioCtx.destination);
 
-  humGain=audioCtx.createGain();humGain.gain.value=.045;humGain.connect(masterGain);
+  humGain=audioCtx.createGain();humGain.gain.value=.04;humGain.connect(masterGain);
   hum1=audioCtx.createOscillator();hum1.type="sine";hum1.frequency.value=54;hum1.connect(humGain);hum1.start();
   hum2=audioCtx.createOscillator();hum2.type="sine";hum2.frequency.value=81;hum2.connect(humGain);hum2.start();
+
+  sirenGain=audioCtx.createGain();sirenGain.gain.value=0;sirenGain.connect(masterGain);
+  sirenA=audioCtx.createOscillator();sirenA.type="sawtooth";sirenA.frequency.value=620;sirenA.connect(sirenGain);sirenA.start();
+  sirenB=audioCtx.createOscillator();sirenB.type="triangle";sirenB.frequency.value=930;sirenB.connect(sirenGain);sirenB.start();
+  sirenSweepHandle=setInterval(()=>{
+    if(!audioReady)return;
+    const tt=audioCtx.currentTime;
+    const w=(Math.sin(Date.now()/430)+1)/2;
+    sirenA.frequency.cancelScheduledValues(tt);
+    sirenB.frequency.cancelScheduledValues(tt);
+    sirenA.frequency.linearRampToValueAtTime(520 + w*260, tt+.12);
+    sirenB.frequency.linearRampToValueAtTime(820 + w*380, tt+.12);
+  },120);
 
   audioReady=true;
   $("audioGate").classList.add("online");text("audioState","AUDIO ONLINE");text("audioBtn","RESTART AUDIO");show("muteBtn",true);
@@ -584,47 +609,66 @@ function noiseBurst(vol=.08,dur=.14){
   const buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*dur),audioCtx.sampleRate);
   const data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);
   const src=audioCtx.createBufferSource(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
-  src.buffer=buffer;f.type="bandpass";f.frequency.value=900+Math.random()*1400;f.Q.value=1.2;g.gain.value=vol;
+  src.buffer=buffer;f.type="bandpass";f.frequency.value=850+Math.random()*1400;f.Q.value=1.1;g.gain.value=vol;
   src.connect(f);f.connect(g);g.connect(masterGain);src.start();
 }
-function industrialAlarm(level=1){
-  if(!audioReady||muted)return;
-  const base=level>1?780:620;
-  playTone(base,.42,level>1?.22:.15,"square",base*1.18);
-  setTimeout(()=>playTone(base*.83,.42,level>1?.2:.13,"square",base*.72),460);
-  if(level>1)setTimeout(()=>noiseBurst(.11,.22),180);
+function setSiren(level=0){
+  if(!audioReady)return;
+  const now=audioCtx.currentTime;
+  sirenGain.gain.cancelScheduledValues(now);
+  sirenGain.gain.linearRampToValueAtTime(level,now+.15);
 }
+function startSiren(mode,durationMs=0){
+  if(!audioReady||muted)return;
+  clearTimeout(sirenStopTimeout);
+  setSiren(mode==="cascade"?.18:.11);
+  if(durationMs>0)sirenStopTimeout=setTimeout(()=>setSiren(0),durationMs);
+}
+function stopSiren(){clearTimeout(sirenStopTimeout); if(audioReady) setSiren(0);}
+function speakWarning(){
+  if(muted || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance("Warning. Primary anchor instability.");
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(x=>/english/i.test(x.lang||"")) || voices[0];
+  if(v) u.voice=v;
+  u.rate=.88; u.pitch=.62; u.volume=1;
+  window.speechSynthesis.speak(u);
+}
+function startVoiceLoop(){
+  stopVoiceLoop();
+  speakWarning();
+  voiceLoopHandle=setInterval(()=>speakWarning(),9000);
+}
+function stopVoiceLoop(){ if(voiceLoopHandle){clearInterval(voiceLoopHandle);voiceLoopHandle=null;} if("speechSynthesis" in window) window.speechSynthesis.cancel(); }
 function confirmTone(){playTone(520,.13,.10,"sine",820);setTimeout(()=>playTone(820,.16,.08,"sine",1040),120)}
 function errorTone(){playTone(210,.28,.16,"sawtooth",85);noiseBurst(.09,.18)}
 function audioEvent(type){
   if(!audioReady)return;
-  if(type==="phase2_entry"){industrialAlarm(1);setTimeout(()=>industrialAlarm(1),1100)}
-  if(type==="cascade_entry"){industrialAlarm(2);setTimeout(()=>industrialAlarm(2),900);setTimeout(()=>industrialAlarm(2),1800)}
-  if(type==="attempt"){industrialAlarm(2);errorTone()}
-  if(type==="plasma")noiseBurst(.07,.11);
+  if(type==="phase2_entry"){
+    startSiren("phase2",5000);
+    speakWarning();
+    setTimeout(()=>noiseBurst(.07,.12),600);
+  }
+  if(type==="cascade_entry"){
+    startSiren("cascade",0);
+    startVoiceLoop();
+    setTimeout(()=>noiseBurst(.1,.18),300);
+    setTimeout(()=>noiseBurst(.1,.18),1200);
+  }
+  if(type==="attempt"){ noiseBurst(.11,.22); errorTone(); }
+  if(type==="plasma")noiseBurst(.08,.12);
 }
-function setAlarmUrgency(danger){currentUrgency=danger}
-function restartAlarmLoop(rate){
-  if(alarmInterval)clearInterval(alarmInterval);
-  if(rate<=0){alarmInterval=null;return}
-  alarmInterval=setInterval(()=>{
-    if(!audioReady||muted)return;
-    industrialAlarm(game.state==="CASCADE"?2:1);
-  },rate);
-}
-function stopAlarmLoop(){if(alarmInterval){clearInterval(alarmInterval);alarmInterval=null}}
 function updateAudioState(s){
   if(!audioReady)return;
   const now=audioCtx.currentTime;
   humGain.gain.cancelScheduledValues(now);
-  humGain.gain.linearRampToValueAtTime(s==="PHASE2"?.06:s==="CASCADE"?.075:.035,now+.4);
-  if(s==="PHASE2")restartAlarmLoop(6200);
-  else if(s==="CASCADE")restartAlarmLoop(1650);
-  else stopAlarmLoop();
+  humGain.gain.linearRampToValueAtTime(s==="PHASE2"?.055:s==="CASCADE"?.072:.035,now+.4);
+  if(s!=="CASCADE")stopVoiceLoop();
+  if(s!=="CASCADE" && s!=="PHASE2")stopSiren();
 }
 $("audioBtn").onclick=initAudio;
-$("muteBtn").onclick=()=>{muted=!muted;masterGain.gain.value=muted?0:.20;text("muteBtn",muted?"UNMUTE":"MUTE")};
-
+$("muteBtn").onclick=()=>{muted=!muted;masterGain.gain.value=muted?0:.22;text("muteBtn",muted?"UNMUTE":"MUTE");if(muted)stopVoiceLoop();else if(game.state==="CASCADE")startVoiceLoop();};
 /* misc */
 setInterval(()=>text("clock",new Date().toLocaleTimeString("it-IT",{hour12:false})),1000);
 setInterval(()=>{text("drift","+"+(0.002+Math.random()*.003).toFixed(4)+"%");text("systemCode","CX-"+Math.floor(1000+Math.random()*9000))},5000);

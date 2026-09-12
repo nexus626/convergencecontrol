@@ -100,3 +100,16 @@ Telefono Keepers:
 
 QR partecipanti:
 - `key.html?key=...`
+
+
+## v6 refinements
+- Right telemetry column right-aligned to avoid overlap.
+- Cascade right-side diagnostics right-aligned and clipped inside their column.
+- Rolling diagnostics now type themselves character by character.
+- Phase II siren starts at entry and fades after ~5 seconds.
+- Phase III siren continues until resolution, with repeating voice warning when supported by the browser.
+- Cascade NOVA enlarged and placed as a background crisis core behind the countdown.
+
+
+## v6.1
+- Finale: `CONVERGENCE RESTORED` e `MERRY CHRISTMAS` sono ora visualizzati entrambi come titolo principale, con la stessa dimensione.
