@@ -318,6 +318,183 @@ body.phase2.phase2-live #normalCosmos .r3{
   height:400px;
 }
 
+
+/* =========================================================
+   FESTIVE FINAL OVERLAY
+   ========================================================= */
+.hero .title-line{
+  display:block;
+}
+
+body.resolved #title{
+  text-shadow:
+    0 0 18px rgba(164,255,220,.20),
+    0 0 42px rgba(117,255,206,.10);
+}
+
+body.resolved #subtitle{
+  color:#d7fff0;
+}
+
+.festive-overlay{
+  position:fixed;
+  inset:0;
+  z-index:14;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.snow-field{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+}
+
+.snowflake{
+  position:absolute;
+  top:-12vh;
+  color:rgba(255,255,255,.86);
+  text-shadow:0 0 10px rgba(255,255,255,.35);
+  user-select:none;
+  animation-name:snowFall;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+  animation-delay:var(--delay,0s);
+  animation-duration:var(--dur,12s);
+  opacity:var(--alpha,.75);
+}
+
+@keyframes snowFall{
+  0%{
+    transform:translate3d(0,-10vh,0);
+    opacity:0;
+  }
+  8%{
+    opacity:var(--alpha,.75);
+  }
+  100%{
+    transform:translate3d(var(--drift,20px),112vh,0);
+    opacity:.08;
+  }
+}
+
+.light-string{
+  position:absolute;
+  display:flex;
+  gap:8px;
+  z-index:2;
+  pointer-events:none;
+}
+
+.light-string.top,
+.light-string.bottom{
+  left:10px;
+  right:10px;
+  justify-content:space-between;
+}
+
+.light-string.top{
+  top:6px;
+}
+.light-string.bottom{
+  bottom:6px;
+}
+
+.light-string.left,
+.light-string.right{
+  top:12px;
+  bottom:12px;
+  width:26px;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.light-string.left{ left:6px; }
+.light-string.right{ right:6px; }
+
+.bulb{
+  position:relative;
+  width:14px;
+  height:18px;
+  border-radius:50% 50% 45% 45%;
+  background:var(--bulb,#ff5959);
+  box-shadow:
+    0 0 7px var(--bulb,#ff5959),
+    0 0 16px color-mix(in srgb, var(--bulb,#ff5959) 72%, white 28%),
+    0 0 28px color-mix(in srgb, var(--bulb,#ff5959) 58%, white 42%);
+  animation:bulbBlink 1.5s ease-in-out infinite;
+  animation-delay:var(--blink,0s);
+  opacity:.96;
+}
+
+.bulb::before{
+  content:"";
+  position:absolute;
+  top:-5px;
+  left:50%;
+  transform:translateX(-50%);
+  width:8px;
+  height:6px;
+  border-radius:2px 2px 0 0;
+  background:#39424d;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
+}
+
+.bulb::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-9px;
+  width:2px;
+  height:10px;
+  transform:translateX(-50%);
+  background:rgba(226,236,255,.18);
+}
+
+.light-string.top .bulb:nth-child(odd),
+.light-string.bottom .bulb:nth-child(odd){
+  transform:translateY(4px);
+}
+.light-string.left .bulb:nth-child(odd),
+.light-string.right .bulb:nth-child(odd){
+  transform:translateX(2px);
+}
+.light-string.left .bulb:nth-child(even),
+.light-string.right .bulb:nth-child(even){
+  transform:translateX(-2px);
+}
+
+@keyframes bulbBlink{
+  0%,100%{
+    filter:brightness(.88);
+    opacity:.84;
+  }
+  50%{
+    filter:brightness(1.23);
+    opacity:1;
+  }
+}
+
+body.resolved .light-string.top::before,
+body.resolved .light-string.bottom::before{
+  content:"";
+  position:absolute;
+  left:10px;
+  right:10px;
+  top:3px;
+  border-top:2px solid rgba(188,218,255,.11);
+}
+body.resolved .light-string.left::before,
+body.resolved .light-string.right::before{
+  content:"";
+  position:absolute;
+  top:10px;
+  bottom:10px;
+  left:12px;
+  border-left:2px solid rgba(188,218,255,.11);
+}
+
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -414,6 +591,15 @@ body.phase2.phase2-live #normalCosmos .r3{
 </div>
 
 
+
+<div id="festiveOverlay" class="festive-overlay hidden">
+  <div class="snow-field" id="snowField"></div>
+  <div class="light-string top" id="lightsTop"></div>
+  <div class="light-string right" id="lightsRight"></div>
+  <div class="light-string bottom" id="lightsBottom"></div>
+  <div class="light-string left" id="lightsLeft"></div>
+</div>
+
 <div id="phaseWarning" class="phase-warning">
   <div class="phase-warning-box">
     <div class="phase-warning-symbol">⚠</div>
@@ -457,7 +643,60 @@ let phase2InstabilityHandle=null;
 let phaseWarningTimer=null;
 let phaseWarningUntil=0;
 const PHASE_WARNING_MS=7000;
+let festiveLoopHandle=null;
+let festiveNoteTimers=[];
+let festiveDecorBuilt=false;
 let bolts=[];
+
+
+function buildFestiveDecor(){
+  if(festiveDecorBuilt)return;
+  festiveDecorBuilt=true;
+
+  const colors=["#ff5959","#ffd84d","#6de8ff","#82ff8d","#c58cff","#ff8ab7"];
+  const strings=[
+    ["lightsTop",26],
+    ["lightsBottom",26],
+    ["lightsLeft",15],
+    ["lightsRight",15]
+  ];
+
+  strings.forEach(([id,count])=>{
+    const host=$(id);
+    if(!host)return;
+    host.innerHTML="";
+    for(let i=0;i<count;i++){
+      const bulb=document.createElement("i");
+      bulb.className="bulb";
+      bulb.style.setProperty("--bulb",colors[i%colors.length]);
+      bulb.style.setProperty("--blink",`${(i%6)*0.18}s`);
+      host.appendChild(bulb);
+    }
+  });
+
+  const snow=$("snowField");
+  if(snow){
+    snow.innerHTML="";
+    const flakeSymbols=["•","•","✦","❄","·"];
+    for(let i=0;i<64;i++){
+      const flake=document.createElement("span");
+      flake.className="snowflake";
+      flake.textContent=flakeSymbols[i%flakeSymbols.length];
+      flake.style.left=`${Math.random()*100}%`;
+      flake.style.fontSize=`${8+Math.random()*11}px`;
+      flake.style.setProperty("--dur",`${9+Math.random()*10}s`);
+      flake.style.setProperty("--delay",`${-Math.random()*18}s`);
+      flake.style.setProperty("--drift",`${-32+Math.random()*64}px`);
+      flake.style.setProperty("--alpha",`${0.35+Math.random()*0.55}`);
+      snow.appendChild(flake);
+    }
+  }
+}
+
+function setFestiveOverlay(on){
+  buildFestiveDecor();
+  show("festiveOverlay",on);
+}
 
 /* local / remote state */
 function localState(){
@@ -513,6 +752,7 @@ function addNote(html){const s=document.createElement("span");s.className="phase
 
 function baseDefault(){
   document.body.className="";
+  setFestiveOverlay(false);
   show("defaultView",true);show("cascadeView",false);show("archiveAlert",false);show("phase2Log",false);show("resolvedCard",false);
   clearAction();
   text("eyebrow","INTERDIMENSIONAL EVENT ACTIVE");
@@ -977,11 +1217,12 @@ function render(){
   if(s==="RESOLVED"){
     document.body.classList.add("resolved");
     text("eyebrow","DISTRIBUTED CONVERGENCE ESTABLISHED");
-    $("title").innerHTML="CONVERGENCE RESTORED<br>MERRY CHRISTMAS";
+    $("title").innerHTML='<span class="title-line">CONVERGENCE RESTORED</span><span class="title-line">MERRY CHRISTMAS</span>';
     text("subtitle","ALL TIMELINES COEXIST");
     text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
     text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
     show("resolvedCard",true);
+    setFestiveOverlay(true);
     stopSiren();
     stopVoiceLoop();
   }
@@ -1649,6 +1890,64 @@ function errorTone(){
   noiseBurst(.12,.18,900);
 }
 
+
+function clearFestiveNoteTimers(){
+  festiveNoteTimers.forEach(id=>clearTimeout(id));
+  festiveNoteTimers=[];
+}
+
+function playFestiveBell(freq,dur=.24,vol=.09){
+  if(!audioReady||muted)return;
+
+  playTone(freq,dur,vol,"triangle",freq*1.02);
+
+  festiveNoteTimers.push(setTimeout(()=>{
+    playTone(freq*2,.11,vol*.42,"sine");
+  },22));
+
+  festiveNoteTimers.push(setTimeout(()=>{
+    playTone(freq*1.5,.14,vol*.18,"sine");
+  },65));
+}
+
+function playFestivePhrase(){
+  if(!audioReady||muted)return;
+
+  clearFestiveNoteTimers();
+
+  const seq=[
+    [0,523.25],[260,659.25],[520,783.99],[900,659.25],
+    [1220,698.46],[1480,783.99],[1760,880.00],[2140,783.99],
+    [2700,659.25],[2960,783.99],[3240,987.77],[3640,880.00],
+    [4200,783.99],[4520,698.46],[4840,659.25],[5360,523.25]
+  ];
+
+  seq.forEach(([delay,freq],idx)=>{
+    festiveNoteTimers.push(setTimeout(()=>{
+      playFestiveBell(freq, idx%4===0 ? .30 : .22, idx%3===0 ? .10 : .08);
+      if(idx%4===1){
+        playFestiveBell(freq*0.75,.18,.045);
+      }
+    },delay));
+  });
+}
+
+function startFestiveMusic(){
+  if(!audioReady||muted)return;
+  if(festiveLoopHandle)return;
+
+  playFestivePhrase();
+  festiveLoopHandle=setInterval(playFestivePhrase,7000);
+}
+
+function stopFestiveMusic(){
+  if(festiveLoopHandle){
+    clearInterval(festiveLoopHandle);
+    festiveLoopHandle=null;
+  }
+  clearFestiveNoteTimers();
+}
+
 function audioEvent(type){
   if(!audioReady)return;
 
@@ -1683,11 +1982,13 @@ function updateAudioState(s){
   humGain.gain.linearRampToValueAtTime(
     s==="PHASE2" ? .05 :
     s==="CASCADE" ? .06 :
+    s==="RESOLVED" ? .026 :
     .032,
     now+.4
   );
 
   if(s==="PHASE2"){
+    stopFestiveMusic();
     startPhase2Horn();
 
     /* Never repeat voice in Phase 2 */
@@ -1697,13 +1998,20 @@ function updateAudioState(s){
     }
   }
   else if(s==="CASCADE"){
+    stopFestiveMusic();
     startCascadeHorn();
 
     if(!voiceLoopHandle){
       startVoiceLoop();
     }
   }
+  else if(s==="RESOLVED"){
+    stopHornPattern();
+    stopVoiceLoop();
+    startFestiveMusic();
+  }
   else{
+    stopFestiveMusic();
     stopHornPattern();
     stopVoiceLoop();
   }
@@ -1724,6 +2032,7 @@ $("muteBtn").onclick=()=>{
   if(muted){
     stopVoiceLoop();
     stopHornPattern();
+    stopFestiveMusic();
   }
   else{
     updateAudioState(game.state);
