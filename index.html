@@ -1,46 +1,52 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Convergence — Control Station</title>
-<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-<div class="screen">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Convergence — Control Station</title><style>
+:root{--bg:#02040a;--panel:rgba(5,11,24,.82);--line:rgba(140,200,255,.22);--accent:#9fd8ff;--text:#eef7ff;--muted:#7d93aa;--ok:#a5ffd6;--bad:#ff6b7a}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at center,#0a1830 0,#02040a 46%,#010207 100%);color:var(--text);font-family:"Courier New",monospace}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.4px);background-size:95px 95px}
+.screen{min-height:100vh;padding:26px 34px;display:grid;grid-template-rows:auto 1fr auto}
+header,footer{display:flex;justify-content:space-between;border-color:var(--line)}header{border-bottom:1px solid var(--line);padding-bottom:14px}footer{border-top:1px solid var(--line);padding-top:12px;font-size:10px;color:var(--muted)}
+header h2{letter-spacing:.25em;margin:5px 0}header small,.right small{color:var(--muted)}.right{text-align:right}.right b{display:block;color:var(--accent);margin-top:5px}
+main{display:grid;grid-template-columns:210px 1fr 210px;gap:20px;align-items:center}aside{color:var(--muted);font-size:11px;line-height:1.7}aside p{border-left:1px solid var(--line);padding-left:12px;margin:24px 0}aside b{color:var(--accent);font-weight:normal}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:660px;justify-content:center}
+.cosmos{width:390px;height:390px;position:relative;display:grid;place-items:center}.ring{position:absolute;border:1px solid rgba(140,200,255,.48);border-radius:50%}.r1{width:355px;height:355px;animation:spin 32s linear infinite}.r2{width:280px;height:280px;border-style:dashed;animation:spinR 22s linear infinite}.r3{width:205px;height:205px;animation:spin 15s linear infinite}.core{width:94px;height:94px;border-radius:50%;background:radial-gradient(circle,#fff 0,#aee6ff 22%,rgba(65,140,255,.7) 48%,transparent 74%);filter:drop-shadow(0 0 22px #64bfff);animation:pulse 3.2s ease-in-out infinite}
+.center>small{letter-spacing:.28em;color:var(--muted)}.center>h1{letter-spacing:.16em;font-weight:400;margin:10px 0 6px}.center>p{color:var(--accent);letter-spacing:.15em;font-size:12px;margin:0}
+.status{display:grid;grid-template-columns:repeat(3,1fr);width:min(650px,92vw);margin-top:22px;border:1px solid var(--line);background:rgba(3,9,20,.58)}.status div{padding:14px;border-right:1px solid var(--line)}.status div:last-child{border-right:0}.status small{display:block;color:var(--muted);font-size:9px}.status b{display:block;color:var(--ok);margin-top:6px;font-size:12px;font-weight:normal}
+.panel{width:min(760px,92vw);margin-top:16px;padding:18px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(9px)}.row{display:flex;gap:8px}input{flex:1;background:#02060e;border:1px solid rgba(140,200,255,.5);color:var(--text);padding:12px;text-transform:uppercase}button{background:#09172d;color:var(--accent);border:1px solid rgba(140,200,255,.5);padding:12px 14px;cursor:pointer;font:inherit}button:hover{border-color:var(--accent);color:#fff}.wide{width:100%;margin-top:10px}.hidden{display:none!important}.timer{font-size:54px;color:var(--bad);margin:5px 0 15px}.timelineGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.timelineGrid button small{display:block;color:var(--muted);margin-top:5px}
+body.cascade .core{background:radial-gradient(circle,#fff 0,#ffbac2 22%,rgba(255,65,92,.7) 48%,transparent 74%);filter:drop-shadow(0 0 25px #ff5368)}body.cascade .ring{border-color:rgba(255,90,110,.55)}
+.master{padding:40px 20px}.masterWrap{width:min(900px,100%);margin:auto;position:relative;z-index:1}.masterGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.masterGrid button{min-height:58px}.master label{display:block;color:var(--muted);font-size:10px;margin:12px 0 6px}.master input{width:100%}.danger{color:var(--bad);border-color:rgba(255,107,122,.6)}.success{color:var(--ok);border-color:rgba(165,255,214,.6)}a{color:var(--accent)}.key{max-width:560px;margin:10vh auto;text-align:center}.mini{border:1px solid var(--line);padding:14px;margin:20px auto;width:220px}.mini small{display:block;color:var(--muted)}.mini b{color:var(--accent)}.dangerText{color:var(--bad)}.successText{color:var(--ok)}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes spinR{to{transform:rotate(-360deg)}}@keyframes pulse{0%,100%{transform:scale(.95)}50%{transform:scale(1.08)}}
+@media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.timelineGrid{grid-template-columns:repeat(2,1fr)}.cosmos{width:310px;height:310px}.r1{width:290px;height:290px}.r2{width:230px;height:230px}.r3{width:170px;height:170px}.masterGrid{grid-template-columns:1fr}}
+</style></head><body><div class="screen">
 <header><div><small>MUSYCHEN / INTERDIMENSIONAL CONTROL</small><h2>THE CONVERGENCE</h2></div><div class="right"><small>LOCAL TIME</small><b id="clock">--:--:--</b></div></header>
 <main>
-<aside><p>SPACETIME NODE<br><b>C-2026.12</b></p><p>TEMPORAL DRIFT<br><b id="drift">+0.0028%</b></p><p>ARCHIVE LINK<br><b id="archiveLink">CONNECTED</b></p></aside>
+<aside><p>SPACETIME NODE<br><b>C-2026.12</b></p><p>TEMPORAL DRIFT<br><b id="drift">+0.0028%</b></p><p>ARCHIVE LINK<br><b>CONNECTED</b></p></aside>
 <section class="center">
-<div class="cosmos" id="cosmos"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="core"></i></div>
-<small id="eyebrow">INTERDIMENSIONAL EVENT ACTIVE</small>
-<h1 id="title">WELCOME TO THE CONVERGENCE</h1>
-<p id="subtitle">SPACETIME SYNCHRONIZATION UNDER CONTROL</p>
-<div class="status">
-<div><small>CONVERGENCE STATUS</small><b id="conv">STABLE</b></div>
-<div><small>ARCHIVE STATUS</small><b id="archive">MONITORING</b></div>
-<div><small>TIMELINE INTEGRITY</small><b id="integrity">100.00%</b></div>
-</div>
+<div class="cosmos"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="core"></i></div>
+<small id="eyebrow">INTERDIMENSIONAL EVENT ACTIVE</small><h1 id="title">WELCOME TO THE CONVERGENCE</h1><p id="subtitle">SPACETIME SYNCHRONIZATION UNDER CONTROL</p>
+<div class="status"><div><small>CONVERGENCE STATUS</small><b id="conv">STABLE</b></div><div><small>ARCHIVE STATUS</small><b id="archive">MONITORING</b></div><div><small>TIMELINE INTEGRITY</small><b id="integrity">100.00%</b></div></div>
 <div id="message" class="panel hidden"></div>
-<div id="codeBox" class="panel hidden">
-<label id="codeLabel">ENTER PROTOCOL CODE</label>
-<div class="row"><input id="code"><button id="submitCode">VALIDATE</button></div><p id="feedback"></p>
-</div>
-<div id="cascade" class="panel hidden">
-<small>CASCADE WINDOW</small><div id="timer" class="timer">10:00</div>
-<div class="timelineGrid">
-<button data-t="ASTRA">ASTRA<small>A7F2</small></button>
-<button data-t="NOVA">NOVA<small>N4C8</small></button>
-<button data-t="VEGA">VEGA<small>V2D6</small></button>
-<button data-t="UMBRA">UMBRA<small>U9B3</small></button>
-</div>
-<button id="overrideBtn" class="wide">MANUAL OVERRIDE</button>
-<div id="overrideBox" class="hidden"><div class="row"><input id="override" placeholder="ENTER COMMAND"><button id="exec">EXECUTE</button></div><p id="overrideFeedback"></p></div>
-</div>
+<div id="codeBox" class="panel hidden"><label id="codeLabel">ENTER PROTOCOL CODE</label><div class="row"><input id="code"><button id="submitCode">VALIDATE</button></div><p id="feedback"></p></div>
+<div id="cascade" class="panel hidden"><small>CASCADE WINDOW</small><div id="timer" class="timer">10:00</div><div class="timelineGrid"><button data-t="ASTRA">ASTRA<small>A7F2</small></button><button data-t="NOVA">NOVA<small>N4C8</small></button><button data-t="VEGA">VEGA<small>V2D6</small></button><button data-t="UMBRA">UMBRA<small>U9B3</small></button></div><button id="overrideBtn" class="wide">MANUAL OVERRIDE</button><div id="overrideBox" class="hidden"><div class="row"><input id="override" placeholder="ENTER COMMAND"><button id="exec">EXECUTE</button></div><p id="overrideFeedback"></p></div></div>
 <div id="resolved" class="panel hidden"><b>DISTRIBUTED CONVERGENCE ESTABLISHED</b><h1>MERRY CHRISTMAS</h1><p>ALL TIMELINES COEXIST.</p></div>
 </section>
-<aside><p>PRIMARY FIELD<br><b id="field">ACTIVE</b></p><p>REFERENCE FRAME<br><b id="frame">LOCKED</b></p><p>ANCHOR STATUS<br><b id="anchor">STANDBY</b></p><p>SYSTEM CODE<br><b id="sys">CX-0000</b></p></aside>
-</main>
-<footer><span>CONVERGENCE CONTROL SYSTEM / BUILD 26.12</span><span>● CONTROL STATION ONLINE</span></footer>
-</div>
-<script src="js/config.js"></script><script src="js/app.js"></script>
-</body></html>
+<aside><p>PRIMARY FIELD<br><b>ACTIVE</b></p><p>REFERENCE FRAME<br><b id="frame">LOCKED</b></p><p>ANCHOR STATUS<br><b id="anchor">STANDBY</b></p><p>SYSTEM CODE<br><b id="sys">CX-0000</b></p></aside>
+</main><footer><span>CONVERGENCE CONTROL SYSTEM / BUILD 26.12</span><span>● CONTROL STATION ONLINE</span></footer></div><script>const C={defaultState:"WELCOME",phase1Code:"AR-4721",phase2Code:"NOVA-2974",finalCommand:"STABILIZE ALL TIMELINES",cascadeMinutes:10};</script><script>
+const $=id=>document.getElementById(id),state=()=>localStorage.getItem("convergenceState")||C.defaultState;
+const get=(k,d)=>localStorage.getItem(k)||d, norm=s=>(s||"").trim().replace(/\s+/g," ").toUpperCase(), show=(id,on=1)=>$(id)?.classList.toggle("hidden",!on), text=(id,v)=>{$(id)&&($(id).textContent=v)};
+function clear(){["message","codeBox","cascade","resolved"].forEach(x=>show(x,0));document.body.classList.remove("cascade")}
+function base(){clear();text("eyebrow","INTERDIMENSIONAL EVENT ACTIVE");text("title","WELCOME TO THE CONVERGENCE");text("subtitle","SPACETIME SYNCHRONIZATION UNDER CONTROL");text("conv","STABLE");text("archive","MONITORING");text("integrity","100.00%");text("anchor","STANDBY");text("frame","LOCKED")}
+function render(){base();let s=state();
+if(s==="PHASE1"){text("title","ARCHIVE ANOMALY DETECTED");text("subtitle","PRE-CONVERGENCE MEMORY RECORDS REQUIRE RECONSTRUCTION");text("archive","CORRUPTED");text("integrity","96.41%");show("message");$("message").innerHTML="ARCHIVE RECONSTRUCTION ACTIVE<br><small>Recover and validate corrupted Memory Records.</small>";show("codeBox");text("codeLabel","ENTER ARCHIVE RECONSTRUCTION CODE")}
+if(s==="PHASE1_COMPLETE"){text("title","ARCHIVE RESTORED");text("subtitle","FOUR COMPATIBLE TIMELINES DETECTED");text("archive","VERIFIED");text("anchor","PENDING");show("message");$("message").innerHTML="ASTRA &nbsp; NOVA &nbsp; VEGA &nbsp; UMBRA<br><small>ANCHOR PROTOCOL awaiting authorization.</small>"}
+if(s==="PHASE2"){text("title","ANCHOR PROTOCOL ACTIVE");text("subtitle","IDENTIFY A STABLE REFERENCE TIMELINE");text("archive","VERIFIED");text("anchor","ANALYZING");show("message");$("message").innerHTML="ASTRA &nbsp; NOVA &nbsp; VEGA &nbsp; UMBRA";show("codeBox");text("codeLabel","ENTER ANCHOR PROTOCOL CODE")}
+if(s==="CLEARED"||s==="PROVISIONAL"){text("title","CONVERGENCE STABLE");text("subtitle",s==="PROVISIONAL"?"PROVISIONAL PRIMARY ANCHOR ESTABLISHED":"PRIMARY ANCHOR ESTABLISHED");text("archive","VERIFIED");text("anchor",s==="PROVISIONAL"?"PROVISIONAL":"ACTIVE");text("frame","NOVA");show("message");$("message").innerHTML=(s==="PROVISIONAL"?"AUTOMATIC STABILIZATION COMPLETE":"CASE CLOSED")+"<br><small>All registered Variants cleared.</small>"}
+if(s==="CASCADE"){document.body.classList.add("cascade");text("eyebrow","EMERGENCY PROTOCOL ACTIVE");text("title","CASCADE FAILURE");text("subtitle","PRIMARY ANCHOR INSTABILITY DETECTED");text("conv","CRITICAL");text("archive","EMERGENCY");text("anchor","FAILED");text("frame","UNSTABLE");show("cascade");startTimer()}
+if(s==="RESOLVED"){text("eyebrow","CONVERGENCE RESTORED");text("title","CASCADE TERMINATED");text("subtitle","ALL ACTIVE TIMELINES SYNCHRONIZED");text("anchor","DISTRIBUTED");text("frame","ALL TIMELINES");show("resolved")}}
+function validate(){let s=state(),v=norm($("code").value),ok=s==="PHASE1"?norm(get("phase1Code",C.phase1Code)):norm(get("phase2Code",C.phase2Code));if(v===ok){localStorage.setItem("convergenceState",s==="PHASE1"?"PHASE1_COMPLETE":"CLEARED");text("feedback","CODE ACCEPTED.");setTimeout(render,400)}else text("feedback","INVALID CODE.")}
+$("submitCode").onclick=validate;$("code").addEventListener("keydown",e=>e.key==="Enter"&&validate());
+document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>text("overrideFeedback",b.dataset.t+" SELECTED — SINGLE-TIMELINE STABILIZATION FAILED."));
+$("overrideBtn").onclick=()=>show("overrideBox",$("overrideBox").classList.contains("hidden"));
+function exec(){if(norm($("override").value)===norm(get("finalCommand",C.finalCommand))){text("overrideFeedback","COMMAND ACCEPTED — RELEASING PRIMARY ANCHOR...");setTimeout(()=>{localStorage.setItem("convergenceState","RESOLVED");render()},1200)}else text("overrideFeedback","COMMAND REJECTED — CONFIGURATION UNSTABLE.")}
+$("exec").onclick=exec;$("override").addEventListener("keydown",e=>e.key==="Enter"&&exec());
+let h;function startTimer(){clearInterval(h);let mins=Number(get("timerMinutes",C.cascadeMinutes)),start=Number(localStorage.getItem("cascadeStart"))||Date.now();localStorage.setItem("cascadeStart",start);h=setInterval(()=>{let r=Math.max(0,mins*60000-(Date.now()-start)),s=Math.ceil(r/1000);text("timer",String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"));text("integrity",Math.max(12,71.32-(1-r/(mins*60000))*55).toFixed(2)+"%")},250)}
+setInterval(()=>text("clock",new Date().toLocaleTimeString("it-IT",{hour12:false})),1000);setInterval(()=>{text("drift","+"+(0.002+Math.random()*.003).toFixed(4)+"%");text("sys","CX-"+Math.floor(1000+Math.random()*9000))},5000);window.addEventListener("storage",render);render();
+</script></body></html>
