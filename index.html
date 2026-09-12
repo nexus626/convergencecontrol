@@ -117,6 +117,81 @@ body.resolved{background:radial-gradient(circle at center,#04251d 0,#020b0a 45%,
 @keyframes contain3{0%,100%{scale:.96}35%{scale:1.12}62%{scale:.88}}
 @keyframes riseFade{0%{opacity:0;transform:translateY(16px)}10%{opacity:1}72%{opacity:.9}100%{opacity:0;transform:translateY(-44px)}}
 @keyframes sideFade{0%{opacity:0;transform:translateY(12px)}12%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translateY(-32px)}}
+
+
+/* Resolution transition */
+body.resolved.resolving #normalCore{
+  animation:
+    pulse 3.2s ease-in-out infinite,
+    resolveCoreShift 4.8s linear forwards;
+}
+body.resolved.resolving #normalCosmos .r1{
+  animation:
+    spin 32s linear infinite,
+    resolveRingOuter 4.8s linear forwards;
+}
+body.resolved.resolving #normalCosmos .r2{
+  animation:
+    spinR 22s linear infinite,
+    resolveRingMiddle 4.8s linear forwards;
+}
+body.resolved.resolving #normalCosmos .r3{
+  animation:
+    spin 15s linear infinite,
+    resolveRingInner 4.8s linear forwards;
+}
+
+@keyframes resolveCoreShift{
+  0%{
+    background:radial-gradient(circle,#fff 0,#ffd0a8 16%,rgba(255,58,38,.92) 42%,rgba(121,0,18,.95) 68%,transparent 78%);
+    filter:drop-shadow(0 0 44px #ff4028) saturate(1.65);
+    transform:scale(1.58);
+  }
+  18%{
+    background:radial-gradient(circle,#fff 0,#ffe3a8 18%,rgba(255,120,36,.92) 44%,rgba(165,40,0,.94) 70%,transparent 78%);
+    filter:drop-shadow(0 0 48px #ff7a28) saturate(1.55);
+    transform:scale(1.48);
+  }
+  38%{
+    background:radial-gradient(circle,#fff 0,#fff0bf 18%,rgba(255,201,82,.9) 45%,rgba(184,120,0,.88) 71%,transparent 78%);
+    filter:drop-shadow(0 0 46px #ffd25b) saturate(1.42);
+    transform:scale(1.36);
+  }
+  58%{
+    background:radial-gradient(circle,#fff 0,#e4ffe4 18%,rgba(135,255,204,.84) 46%,rgba(25,126,112,.76) 71%,transparent 78%);
+    filter:drop-shadow(0 0 39px #88ffd7) saturate(1.26);
+    transform:scale(1.24);
+  }
+  78%{
+    background:radial-gradient(circle,#fff 0,#d8f5ff 19%,rgba(112,223,255,.82) 47%,rgba(24,91,169,.72) 72%,transparent 78%);
+    filter:drop-shadow(0 0 31px #7fe4ff) saturate(1.18);
+    transform:scale(1.12);
+  }
+  100%{
+    background:radial-gradient(circle,#fff 0,#b3e9ff 20%,rgba(65,140,255,.72) 48%,transparent 75%);
+    filter:drop-shadow(0 0 22px #64bfff) saturate(1);
+    transform:scale(1);
+  }
+}
+@keyframes resolveRingOuter{
+  0%{border-color:rgba(255,80,70,.78);box-shadow:0 0 26px rgba(255,70,55,.24);transform:scale(1.10)}
+  30%{border-color:rgba(255,171,82,.76);box-shadow:0 0 24px rgba(255,170,72,.2);transform:scale(1.07)}
+  60%{border-color:rgba(138,255,208,.68);box-shadow:0 0 20px rgba(138,255,208,.15);transform:scale(1.03)}
+  100%{border-color:rgba(140,200,255,.5);box-shadow:none;transform:scale(1)}
+}
+@keyframes resolveRingMiddle{
+  0%{border-color:rgba(255,98,84,.8);box-shadow:0 0 22px rgba(255,80,70,.24);transform:scale(1.12)}
+  35%{border-color:rgba(255,196,88,.76);box-shadow:0 0 21px rgba(255,196,88,.18);transform:scale(1.08)}
+  68%{border-color:rgba(142,236,255,.68);box-shadow:0 0 17px rgba(142,236,255,.15);transform:scale(1.03)}
+  100%{border-color:rgba(140,200,255,.5);box-shadow:none;transform:scale(1)}
+}
+@keyframes resolveRingInner{
+  0%{border-color:rgba(255,126,98,.84);box-shadow:0 0 19px rgba(255,96,76,.26);transform:scale(1.14)}
+  42%{border-color:rgba(255,220,120,.75);box-shadow:0 0 17px rgba(255,220,120,.18);transform:scale(1.09)}
+  75%{border-color:rgba(120,222,255,.7);box-shadow:0 0 15px rgba(120,222,255,.14);transform:scale(1.03)}
+  100%{border-color:rgba(140,200,255,.5);box-shadow:none;transform:scale(1)}
+}
+
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -295,6 +370,7 @@ function addButton(label,fn){const b=document.createElement("button");b.textCont
 function addNote(html){const s=document.createElement("span");s.className="phase-note";s.innerHTML=html;$("actionArea").appendChild(s)}
 
 function baseDefault(){
+  resetResolutionTransitionVisuals();
   document.body.className="";
   show("defaultView",true);show("cascadeView",false);show("archiveAlert",false);show("phase2Log",false);show("resolvedCard",false);
   clearAction();
@@ -303,6 +379,45 @@ function baseDefault(){
   text("subtitle","SPACETIME SYNCHRONIZATION UNDER CONTROL");
   text("conv","STABLE");text("archive","CORRUPTED");text("integrity","100.00%");
   text("frame","LOCKED");text("anchor","STANDBY");text("field","ACTIVE");
+}
+
+
+const RESOLUTION_TRANSITION_MS = 4800;
+
+function resetResolutionTransitionVisuals(){
+  document.body.classList.remove("resolving");
+  const core=$("normalCore");
+  const r1=document.querySelector("#normalCosmos .r1");
+  const r2=document.querySelector("#normalCosmos .r2");
+  const r3=document.querySelector("#normalCosmos .r3");
+  [core,r1,r2,r3].forEach(el=>{
+    if(!el) return;
+    el.style.animationDelay="";
+  });
+}
+
+function applyResolutionTransitionVisuals(){
+  const changedAt=Number(game.stateChangedAt||Date.now());
+  const elapsed=Math.max(0,Date.now()-changedAt);
+  const clamped=Math.min(elapsed,RESOLUTION_TRANSITION_MS);
+  const delay=`0s, -${clamped}ms`;
+
+  document.body.classList.add("resolving");
+
+  const core=$("normalCore");
+  const r1=document.querySelector("#normalCosmos .r1");
+  const r2=document.querySelector("#normalCosmos .r2");
+  const r3=document.querySelector("#normalCosmos .r3");
+
+  if(core) core.style.animationDelay=delay;
+  if(r1) r1.style.animationDelay=delay;
+  if(r2) r2.style.animationDelay=delay;
+  if(r3) r3.style.animationDelay=delay;
+
+  if(elapsed>=RESOLUTION_TRANSITION_MS){
+    document.body.classList.remove("resolving");
+    [core,r1,r2,r3].forEach(el=>{ if(el) el.style.animationDelay=""; });
+  }
 }
 
 function render(){
@@ -373,6 +488,7 @@ function render(){
     text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
     text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
     show("resolvedCard",true);
+    applyResolutionTransitionVisuals();
     stopSiren();
     stopVoiceLoop();
   }
