@@ -118,48 +118,63 @@ body.resolved{background:radial-gradient(circle at center,#04251d 0,#020b0a 45%,
 @keyframes riseFade{0%{opacity:0;transform:translateY(16px)}10%{opacity:1}72%{opacity:.9}100%{opacity:0;transform:translateY(-44px)}}
 @keyframes sideFade{0%{opacity:0;transform:translateY(12px)}12%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translateY(-32px)}}
 
-/* Christmas resolution layer */
-#snowCanvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:18;opacity:0;transition:opacity 1.2s ease}
+/* --- SAFE V7: independent resolution + Christmas layers --- */
+#resolutionOverlay{
+  position:fixed; inset:0; z-index:24; pointer-events:none;
+  display:grid; place-items:center;
+  background:radial-gradient(circle at center,rgba(30,0,5,.28),rgba(0,0,0,.70));
+  opacity:0; visibility:hidden; transition:opacity .35s ease;
+}
+#resolutionOverlay.active{opacity:1;visibility:visible}
+.resolution-shell{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.resolution-label{
+  position:relative;z-index:3;margin-bottom:20px;
+  color:#ffe3a6;font-size:clamp(13px,1.05vw,19px);letter-spacing:.18em
+}
+.resolution-nova{
+  position:relative;width:min(48vh,500px);height:min(48vh,500px);
+  display:grid;place-items:center;
+}
+.res-ring{
+  position:absolute;border:1px solid rgba(255,75,95,.75);border-radius:50%;
+  transition:border-color .15s linear,transform .15s linear,box-shadow .15s linear
+}
+.res-ring.a{width:96%;height:96%}
+.res-ring.b{width:73%;height:73%;border-style:dashed}
+.res-ring.c{width:50%;height:50%}
+#resolutionCore{
+  width:88px;height:88px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,#ffe8aa 18%,#ff3e2f 43%,#b80025 67%,transparent 80%);
+  filter:drop-shadow(0 0 60px rgba(255,55,30,.96));
+  transition:none
+}
+#snowCanvas{
+  position:fixed;inset:0;width:100%;height:100%;z-index:18;
+  pointer-events:none;opacity:0;transition:opacity 1.1s ease
+}
 body.christmas #snowCanvas{opacity:1}
-.christmas-lights{position:fixed;inset:0;z-index:19;pointer-events:none;opacity:0;transition:opacity 1s ease}
-body.christmas .christmas-lights{opacity:1}
-.light-bulb{position:absolute;width:13px;height:19px;border-radius:50% 50% 45% 45%;box-shadow:0 0 12px currentColor,0 0 24px currentColor;animation:bulbPulse 1.25s ease-in-out infinite}
-.light-bulb::before{content:"";position:absolute;left:4px;top:-5px;width:5px;height:6px;border-radius:2px;background:#252525}
-.light-bulb:nth-child(4n+1){color:#ff3f5f;background:#ff3f5f;animation-delay:.05s}
-.light-bulb:nth-child(4n+2){color:#ffd54a;background:#ffd54a;animation-delay:.4s}
-.light-bulb:nth-child(4n+3){color:#54e083;background:#54e083;animation-delay:.75s}
-.light-bulb:nth-child(4n){color:#5eb7ff;background:#5eb7ff;animation-delay:1.05s}
-body.resolution-transition .crisis-core{
-  animation:resolutionCore 5.4s ease-in-out forwards!important;
+#christmasLights{
+  position:fixed;inset:0;z-index:19;pointer-events:none;
+  opacity:0;transition:opacity .9s ease
 }
-body.resolution-transition .crisis-ring{
-  animation:resolutionRing 5.4s ease-in-out forwards!important;
+body.christmas #christmasLights{opacity:1}
+.xmas-bulb{
+  position:absolute;width:13px;height:19px;border-radius:50% 50% 44% 44%;
+  color:#fff;background:currentColor;
+  box-shadow:0 0 11px currentColor,0 0 23px currentColor;
+  animation:xmasBlink 1.35s ease-in-out infinite
 }
-body.resolution-transition .countdown{color:#ffe37a;text-shadow:0 0 32px rgba(255,230,100,.45)}
-body.resolution-transition .cascade-heading{color:#ffe7a6}
-body.christmas .core{animation:christmasCore 3.5s ease-in-out infinite}
-body.christmas .ring{border-color:rgba(135,220,255,.58)}
-@keyframes resolutionCore{
-  0%{transform:scale(2.5);filter:drop-shadow(0 0 78px #ff351e) saturate(2.6) hue-rotate(0deg)}
-  22%{transform:scale(2.3);filter:drop-shadow(0 0 72px #ff7a1b) saturate(2.2) hue-rotate(20deg)}
-  44%{transform:scale(2.05);filter:drop-shadow(0 0 64px #ffe35e) saturate(1.8) hue-rotate(45deg)}
-  66%{transform:scale(1.72);filter:drop-shadow(0 0 55px #baff9b) saturate(1.55) hue-rotate(105deg)}
-  82%{transform:scale(1.4);filter:drop-shadow(0 0 48px #80eeff) saturate(1.35) hue-rotate(165deg)}
-  100%{transform:scale(1.15);filter:drop-shadow(0 0 42px #68bfff) saturate(1.2) hue-rotate(205deg)}
+.xmas-bulb::before{
+  content:"";position:absolute;left:4px;top:-5px;width:5px;height:6px;
+  border-radius:2px;background:#252525
 }
-@keyframes resolutionRing{
-  0%{border-color:rgba(255,75,95,.8);box-shadow:0 0 18px rgba(255,60,80,.2);transform:scale(.86)}
-  40%{border-color:rgba(255,220,100,.75);box-shadow:0 0 24px rgba(255,220,100,.16);transform:scale(.96)}
-  70%{border-color:rgba(125,255,200,.7);box-shadow:0 0 24px rgba(125,255,200,.14);transform:scale(1.02)}
-  100%{border-color:rgba(120,205,255,.72);box-shadow:0 0 22px rgba(120,205,255,.14);transform:scale(1)}
-}
-@keyframes christmasCore{
-  0%,100%{transform:scale(.97);filter:drop-shadow(0 0 22px #64bfff)}
-  50%{transform:scale(1.08);filter:drop-shadow(0 0 34px #a6e6ff)}
-}
-@keyframes bulbPulse{
-  0%,100%{opacity:.32;transform:scale(.88)}
-  50%{opacity:1;transform:scale(1.08)}
+.xmas-bulb:nth-child(4n+1){color:#ff4560}
+.xmas-bulb:nth-child(4n+2){color:#ffd64b}
+.xmas-bulb:nth-child(4n+3){color:#58e58b}
+.xmas-bulb:nth-child(4n){color:#62baff}
+@keyframes xmasBlink{
+  0%,100%{opacity:.28;filter:brightness(.7)}
+  50%{opacity:1;filter:brightness(1.35)}
 }
 
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
@@ -167,8 +182,21 @@ body.christmas .ring{border-color:rgba(135,220,255,.58)}
 </head>
 <body>
 <canvas id="plasma"></canvas>
+
 <canvas id="snowCanvas"></canvas>
-<div id="christmasLights" class="christmas-lights"></div>
+<div id="christmasLights"></div>
+<div id="resolutionOverlay">
+  <div class="resolution-shell">
+    <div class="resolution-label">DISTRIBUTED SYNCHRONIZATION IN PROGRESS</div>
+    <div class="resolution-nova">
+      <i id="resRingA" class="res-ring a"></i>
+      <i id="resRingB" class="res-ring b"></i>
+      <i id="resRingC" class="res-ring c"></i>
+      <i id="resolutionCore"></i>
+    </div>
+  </div>
+</div>
+
 
 <div class="screen">
 <header>
@@ -212,7 +240,7 @@ body.christmas .ring{border-color:rgba(135,220,255,.58)}
   </div>
 
   <div id="cascadeView" class="cascade-view hidden">
-    <div id="cascadeHeading" class="cascade-heading">⚠ CASCADE FAILURE / PRIMARY ANCHOR INSTABILITY</div>
+    <div class="cascade-heading">⚠ CASCADE FAILURE / PRIMARY ANCHOR INSTABILITY</div>
 
     <div class="cascade-grid">
       <div id="cascadeLogLeft" class="cascade-log"></div>
@@ -343,8 +371,6 @@ function addNote(html){const s=document.createElement("span");s.className="phase
 
 function baseDefault(){
   document.body.className="";
-  stopChristmasMode();
-  $("timelinePanel").classList.remove("hidden");
   show("defaultView",true);show("cascadeView",false);show("archiveAlert",false);show("phase2Log",false);show("resolvedCard",false);
   clearAction();
   text("eyebrow","INTERDIMENSIONAL EVENT ACTIVE");
@@ -415,37 +441,19 @@ function render(){
   } else stopCascadeLogs();
 
   if(s==="RESOLVED"){
+    document.body.classList.add("resolved");
+    text("eyebrow","DISTRIBUTED CONVERGENCE ESTABLISHED");
+    $("title").innerHTML="CONVERGENCE RESTORED<br>MERRY CHRISTMAS";
+    text("subtitle","ALL TIMELINES COEXIST");
+    text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
+    text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
+    show("resolvedCard",true);
     stopSiren();
     stopVoiceLoop();
-
-    const elapsed = Date.now() - Number(game.stateChangedAt || Date.now());
-
-    if(elapsed < 5600){
-      document.body.classList.add("resolution-transition");
-      show("defaultView",false);
-      show("cascadeView",true);
-
-      text("timer","STABLE");
-      $("timelinePanel").classList.add("hidden");
-      $("cascadeLogLeft").innerHTML="";
-      $("cascadeLogRight").innerHTML="";
-      $("cascadeHeading").textContent="DISTRIBUTED SYNCHRONIZATION IN PROGRESS";
-      playResolutionSequenceOnce();
-    } else {
-      document.body.classList.add("resolved","christmas");
-      show("defaultView",true);
-      show("cascadeView",false);
-      text("eyebrow","DISTRIBUTED CONVERGENCE ESTABLISHED");
-      $("title").innerHTML="CONVERGENCE RESTORED<br>MERRY CHRISTMAS";
-      text("subtitle","ALL TIMELINES COEXIST");
-      text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
-      text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
-      show("resolvedCard",true);
-      startChristmasMode();
-    }
   }
 
   updateAudioState(s);
+  safeFinalStateWatcher();
   lastState=s;
 }
 
@@ -647,8 +655,8 @@ function initAudio(){
 
   const sirenFilter=audioCtx.createBiquadFilter();
   sirenFilter.type="lowpass";
-  sirenFilter.frequency.value=950;
-  sirenFilter.Q.value=.7;
+  sirenFilter.frequency.value=850;
+  sirenFilter.Q.value=.65;
   sirenFilter.connect(sirenGain);
 
   sirenA=audioCtx.createOscillator();
@@ -659,9 +667,9 @@ function initAudio(){
 
   sirenB=audioCtx.createOscillator();
   sirenB.type="square";
-  sirenB.frequency.value=277;
+  sirenB.frequency.value=278;
   const sirenBHarmonic=audioCtx.createGain();
-  sirenBHarmonic.gain.value=.34;
+  sirenBHarmonic.gain.value=.28;
   sirenB.connect(sirenBHarmonic);
   sirenBHarmonic.connect(sirenFilter);
   sirenB.start();
@@ -669,11 +677,11 @@ function initAudio(){
   sirenSweepHandle=setInterval(()=>{
     if(!audioReady)return;
     const tt=audioCtx.currentTime;
-    const w=(Math.sin(Date.now()/760)+1)/2;
+    const w=(Math.sin(Date.now()/820)+1)/2;
     sirenA.frequency.cancelScheduledValues(tt);
     sirenB.frequency.cancelScheduledValues(tt);
-    sirenA.frequency.linearRampToValueAtTime(165 + w*70, tt+.18);
-    sirenB.frequency.linearRampToValueAtTime(245 + w*95, tt+.18);
+    sirenA.frequency.linearRampToValueAtTime(160+w*82,tt+.18);
+    sirenB.frequency.linearRampToValueAtTime(242+w*110,tt+.18);
   },180);
 
   audioReady=true;
@@ -704,18 +712,18 @@ function setSiren(level=0){
   if(!audioReady)return;
   const now=audioCtx.currentTime;
   sirenGain.gain.cancelScheduledValues(now);
-  sirenGain.gain.linearRampToValueAtTime(level,now+.12);
+  sirenGain.gain.linearRampToValueAtTime(level,now+.15);
 }
 function startSiren(mode,durationMs=0){
   if(!audioReady||muted)return;
   clearTimeout(sirenStopTimeout);
-  setSiren(mode==="cascade"?.28:.17);
+  setSiren(mode==="cascade"?.30:.18);
   if(durationMs>0)sirenStopTimeout=setTimeout(()=>setSiren(0),durationMs);
 }
 function stopSiren(){clearTimeout(sirenStopTimeout); if(audioReady) setSiren(0);}
 function getEnglishVoice(){
-  if(!("speechSynthesis" in window)) return null;
-  const voices = window.speechSynthesis.getVoices();
+  if(!("speechSynthesis" in window))return null;
+  const voices=window.speechSynthesis.getVoices();
   return voices.find(v=>/^en-US$/i.test(v.lang||"")) ||
          voices.find(v=>/^en-GB$/i.test(v.lang||"")) ||
          voices.find(v=>/^en-/i.test(v.lang||"")) ||
@@ -723,14 +731,14 @@ function getEnglishVoice(){
 }
 function speakWarning(){
   if(muted || !("speechSynthesis" in window)) return;
-  const v = getEnglishVoice();
-  if(!v) return; // better silence than an Italian voice reading English
+  const v=getEnglishVoice();
+  if(!v) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance("Warning. Primary anchor instability.");
+  const u=new SpeechSynthesisUtterance("Warning. Primary anchor instability.");
   u.voice=v;
   u.lang=v.lang || "en-US";
   u.rate=.82;
-  u.pitch=.68;
+  u.pitch=.66;
   u.volume=1;
   window.speechSynthesis.speak(u);
 }
@@ -769,10 +777,10 @@ function updateAudioState(s){
 $("audioBtn").onclick=initAudio;
 $("muteBtn").onclick=()=>{muted=!muted;masterGain.gain.value=muted?0:.22;text("muteBtn",muted?"UNMUTE":"MUTE");if(muted)stopVoiceLoop();else if(game.state==="CASCADE")startVoiceLoop();};
 
-/* Resolution and Christmas mode */
-let resolutionPlayed=false;
-let christmasStarted=false;
-let christmasLoop=null;
+/* --- SAFE V7 FINAL EFFECTS: isolated from the existing state machine --- */
+let safeFinalTriggered=false;
+let safeChristmasStarted=false;
+let christmasMusicTimer=null;
 let snowflakes=[];
 const snowCanvas=$("snowCanvas");
 const snowCtx=snowCanvas.getContext("2d");
@@ -787,42 +795,135 @@ function resizeSnow(){
 addEventListener("resize",resizeSnow);
 resizeSnow();
 
-function playResolutionSequenceOnce(){
-  if(resolutionPlayed) return;
-  resolutionPlayed=true;
-  if(audioReady&&!muted){
-    stopSiren();
-    stopVoiceLoop();
-    const notes=[196,247,294,392,494,587,784];
-    notes.forEach((n,i)=>setTimeout(()=>playTone(n,.5,.09,"sine",n*1.01),i*520));
-  }
+function lerp(a,b,t){return Math.round(a+(b-a)*t)}
+function mixColor(a,b,t){
+  return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
 }
-function resetResolutionSequence(){ resolutionPlayed=false; }
+function colorToCss(c){return `rgb(${c[0]},${c[1]},${c[2]})`}
+function darker(c,f=.54){return [Math.round(c[0]*f),Math.round(c[1]*f),Math.round(c[2]*f)]}
+function lighter(c,f=.55){return [Math.round(c[0]+(255-c[0])*f),Math.round(c[1]+(255-c[1])*f),Math.round(c[2]+(255-c[2])*f)]}
+
+function resolutionColor(t){
+  const stops=[
+    {t:0.00,c:[235,25,48]},
+    {t:0.23,c:[255,105,32]},
+    {t:0.45,c:[255,224,88]},
+    {t:0.63,c:[224,255,205]},
+    {t:0.79,c:[95,235,225]},
+    {t:1.00,c:[78,157,255]}
+  ];
+  for(let i=0;i<stops.length-1;i++){
+    if(t<=stops[i+1].t){
+      const local=(t-stops[i].t)/(stops[i+1].t-stops[i].t);
+      return mixColor(stops[i].c,stops[i+1].c,Math.max(0,Math.min(1,local)));
+    }
+  }
+  return stops[stops.length-1].c;
+}
+
+function playResolutionChime(){
+  if(!audioReady||muted)return;
+  [174.61,220,261.63,329.63,392,523.25].forEach((n,i)=>{
+    setTimeout(()=>playTone(n,.46,.07,"sine",n*1.008),i*470);
+  });
+}
+
+function runResolutionTransition(){
+  const overlay=$("resolutionOverlay");
+  const core=$("resolutionCore");
+  const rings=[$("resRingA"),$("resRingB"),$("resRingC")];
+  overlay.classList.add("active");
+  stopSiren();
+  stopVoiceLoop();
+  playResolutionChime();
+
+  const duration=5600;
+  const start=performance.now();
+
+  function frame(now){
+    const t=Math.min(1,(now-start)/duration);
+    const eased=1-Math.pow(1-t,2.2);
+    const c=resolutionColor(eased);
+    const light=lighter(c,.58);
+    const dark=darker(c,.46);
+
+    core.style.background=`radial-gradient(circle,white 0%,${colorToCss(light)} 18%,${colorToCss(c)} 44%,${colorToCss(dark)} 68%,transparent 80%)`;
+    core.style.transform=`scale(${2.8-(1.65*eased)+Math.sin(now/210)*.045})`;
+    core.style.filter=`drop-shadow(0 0 ${78-31*eased}px ${colorToCss(c)}) saturate(${2.25-.85*eased})`;
+
+    rings.forEach((r,i)=>{
+      r.style.borderColor=colorToCss(lighter(c,.25));
+      r.style.boxShadow=`0 0 ${18+8*Math.sin(now/(340+i*80))}px ${colorToCss(darker(c,.78))}`;
+      r.style.transform=`scale(${1 + Math.sin(now/(380-i*45)+i)*(.045-i*.006) - eased*(.018+i*.012)})`;
+    });
+
+    if(t<1){
+      requestAnimationFrame(frame);
+    }else{
+      overlay.classList.remove("active");
+      startChristmasMode();
+    }
+  }
+  requestAnimationFrame(frame);
+}
 
 function buildChristmasLights(){
   const box=$("christmasLights");
-  if(box.children.length) return;
-
+  box.innerHTML="";
+  const step=52;
   const bulbs=[];
-  const step=54;
-
-  for(let x=20;x<innerWidth-10;x+=step) bulbs.push({x,y:10,rot:0});
-  for(let y=45;y<innerHeight-25;y+=step) bulbs.push({x:innerWidth-20,y,rot:90});
-  for(let x=innerWidth-35;x>15;x-=step) bulbs.push({x,y:innerHeight-28,rot:180});
-  for(let y=innerHeight-60;y>35;y-=step) bulbs.push({x:10,y,rot:270});
+  for(let x=18;x<innerWidth-18;x+=step)bulbs.push([x,10,0]);
+  for(let y=45;y<innerHeight-28;y+=step)bulbs.push([innerWidth-22,y,90]);
+  for(let x=innerWidth-42;x>18;x-=step)bulbs.push([x,innerHeight-30,180]);
+  for(let y=innerHeight-62;y>38;y-=step)bulbs.push([9,y,270]);
 
   bulbs.forEach((b,i)=>{
     const e=document.createElement("i");
-    e.className="light-bulb";
-    e.style.left=b.x+"px";
-    e.style.top=b.y+"px";
-    e.style.transform=`rotate(${b.rot}deg)`;
-    e.style.animationDelay=((i%7)*.16)+"s";
+    e.className="xmas-bulb";
+    e.style.left=b[0]+"px";
+    e.style.top=b[1]+"px";
+    e.style.transform=`rotate(${b[2]}deg)`;
+    e.style.animationDelay=((i%8)*.15)+"s";
     box.appendChild(e);
   });
 }
 
-function bellTone(freq,start,dur=.24,vol=.055){
+function createSnow(){
+  snowflakes=[];
+  const count=Math.min(170,Math.max(80,Math.floor(innerWidth/9)));
+  for(let i=0;i<count;i++){
+    snowflakes.push({
+      x:Math.random()*innerWidth,
+      y:Math.random()*innerHeight,
+      r:.8+Math.random()*3.2,
+      vy:.35+Math.random()*1.15,
+      vx:-.26+Math.random()*.52,
+      a:.32+Math.random()*.62
+    });
+  }
+}
+
+function snowLoop(){
+  snowCtx.clearRect(0,0,innerWidth,innerHeight);
+  if(document.body.classList.contains("christmas")){
+    for(const f of snowflakes){
+      f.x+=f.vx;f.y+=f.vy;
+      if(f.y>innerHeight+8){f.y=-8;f.x=Math.random()*innerWidth}
+      if(f.x<-10)f.x=innerWidth+5;
+      if(f.x>innerWidth+10)f.x=-5;
+      snowCtx.beginPath();
+      snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      snowCtx.fillStyle=`rgba(255,255,255,${f.a})`;
+      snowCtx.shadowBlur=4;
+      snowCtx.shadowColor="#fff";
+      snowCtx.fill();
+    }
+  }
+  requestAnimationFrame(snowLoop);
+}
+snowLoop();
+
+function bell(freq,start,dur=.24,vol=.052){
   if(!audioReady||muted)return;
   const now=audioCtx.currentTime+start;
   const o1=audioCtx.createOscillator(),o2=audioCtx.createOscillator(),g=audioCtx.createGain();
@@ -833,85 +934,61 @@ function bellTone(freq,start,dur=.24,vol=.055){
   g.gain.setValueAtTime(.0001,now);
   g.gain.exponentialRampToValueAtTime(vol,now+.01);
   g.gain.exponentialRampToValueAtTime(.0001,now+dur);
-  o1.start(now);o2.start(now);o1.stop(now+dur+.04);o2.stop(now+dur+.04);
+  o1.start(now);o2.start(now);o1.stop(now+dur+.03);o2.stop(now+dur+.03);
 }
 
-/* Public-domain Jingle Bells motif, generated with Web Audio */
-function playChristmasMelody(){
+/* short public-domain Christmas medley generated by the browser */
+function playChristmasMedley(){
   if(!audioReady||muted)return;
-  const N={E5:659.25,G5:783.99,C5:523.25,D5:587.33,F5:698.46};
-  const seq=[
+  const N={C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880.00,B5:987.77};
+  const jingle=[
     ["E5",0],["E5",.34],["E5",.68],
-    ["E5",1.22],["E5",1.56],["E5",1.90],
-    ["E5",2.44],["G5",2.78],["C5",3.12],["D5",3.46],["E5",3.80],
-    ["F5",4.48],["F5",4.82],["F5",5.16],["F5",5.50],["F5",5.84],
-    ["E5",6.18],["E5",6.52],["E5",6.86],["E5",7.20],
-    ["D5",7.54],["D5",7.88],["E5",8.22],["D5",8.56],["G5",8.90]
+    ["E5",1.20],["E5",1.54],["E5",1.88],
+    ["E5",2.40],["G5",2.74],["C5",3.08],["D5",3.42],["E5",3.76],
+    ["F5",4.38],["F5",4.72],["F5",5.06],["F5",5.40],
+    ["E5",5.74],["E5",6.08],["D5",6.42],["D5",6.76],["E5",7.10],["D5",7.44],["G5",7.78]
   ];
-  seq.forEach(([n,s])=>bellTone(N[n],s,.26,n==="G5"?.065:.052));
+  jingle.forEach(([n,s])=>bell(N[n],s,.25,n==="G5"?.064:.052));
 }
 
 function startChristmasMusic(){
-  if(christmasLoop) return;
-  playChristmasMelody();
-  christmasLoop=setInterval(playChristmasMelody,11200);
+  if(christmasMusicTimer)return;
+  playChristmasMedley();
+  christmasMusicTimer=setInterval(playChristmasMedley,10400);
 }
 
 function stopChristmasMusic(){
-  if(christmasLoop){clearInterval(christmasLoop);christmasLoop=null;}
+  if(christmasMusicTimer){clearInterval(christmasMusicTimer);christmasMusicTimer=null}
 }
-
-function createSnow(){
-  snowflakes=[];
-  const count=Math.min(160,Math.max(75,Math.floor(innerWidth/10)));
-  for(let i=0;i<count;i++){
-    snowflakes.push({
-      x:Math.random()*innerWidth,
-      y:Math.random()*innerHeight,
-      r:1+Math.random()*3.2,
-      vy:.35+Math.random()*1.15,
-      vx:-.25+Math.random()*.5,
-      a:.35+Math.random()*.6
-    });
-  }
-}
-
-function drawSnow(){
-  snowCtx.clearRect(0,0,innerWidth,innerHeight);
-  if(document.body.classList.contains("christmas")){
-    for(const f of snowflakes){
-      f.x+=f.vx;f.y+=f.vy;
-      if(f.y>innerHeight+8){f.y=-8;f.x=Math.random()*innerWidth}
-      if(f.x<-10)f.x=innerWidth+5;if(f.x>innerWidth+10)f.x=-5;
-      snowCtx.beginPath();
-      snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
-      snowCtx.fillStyle=`rgba(255,255,255,${f.a})`;
-      snowCtx.shadowBlur=5;
-      snowCtx.shadowColor="#ffffff";
-      snowCtx.fill();
-    }
-  }
-  requestAnimationFrame(drawSnow);
-}
-drawSnow();
 
 function startChristmasMode(){
-  if(christmasStarted) return;
-  christmasStarted=true;
+  if(safeChristmasStarted)return;
+  safeChristmasStarted=true;
+  document.body.classList.add("christmas");
   buildChristmasLights();
   createSnow();
   startChristmasMusic();
-  if(audioReady&&!muted){
-    setTimeout(()=>bellTone(1046.5,0,.45,.07),200);
-    setTimeout(()=>bellTone(1318.5,0,.45,.07),520);
-  }
 }
 
 function stopChristmasMode(){
-  if(game.state==="RESOLVED") return;
-  christmasStarted=false;
+  document.body.classList.remove("christmas");
+  safeChristmasStarted=false;
   stopChristmasMusic();
-  resetResolutionSequence();
+}
+
+function safeFinalStateWatcher(){
+  const s=game.state||"WELCOME";
+  if(s==="RESOLVED"){
+    if(!safeFinalTriggered){
+      safeFinalTriggered=true;
+      runResolutionTransition();
+    }else if(safeChristmasStarted){
+      document.body.classList.add("christmas");
+    }
+  }else{
+    safeFinalTriggered=false;
+    if(safeChristmasStarted)stopChristmasMode();
+  }
 }
 
 
