@@ -705,58 +705,82 @@ function deepHornBlast(duration=2.0){
 
   const now=audioCtx.currentTime;
 
-  const hornBus=audioCtx.createGain();
-  const hornFilter=audioCtx.createBiquadFilter();
+  /*
+    Electromechanical industrial/school alarm bell:
+    same audible frequency region as the previous version,
+    but with metallic partials and a rapid mechanical tremolo
+    instead of a horn-like sustained vowel.
+  */
+  const bellBus=audioCtx.createGain();
+  const metallic=audioCtx.createBiquadFilter();
   const presence=audioCtx.createBiquadFilter();
   const compressor=audioCtx.createDynamicsCompressor();
 
-  hornFilter.type="lowpass";
-  hornFilter.frequency.setValueAtTime(1050,now);
-  hornFilter.Q.value=.6;
+  metallic.type="bandpass";
+  metallic.frequency.setValueAtTime(470,now);
+  metallic.Q.value=.65;
 
   presence.type="peaking";
-  presence.frequency.setValueAtTime(390,now);
-  presence.Q.value=.85;
-  presence.gain.value=6;
+  presence.frequency.setValueAtTime(720,now);
+  presence.Q.value=.8;
+  presence.gain.value=5;
 
-  compressor.threshold.value=-20;
-  compressor.knee.value=12;
-  compressor.ratio.value=4.5;
-  compressor.attack.value=.008;
-  compressor.release.value=.32;
+  compressor.threshold.value=-22;
+  compressor.knee.value=10;
+  compressor.ratio.value=5;
+  compressor.attack.value=.004;
+  compressor.release.value=.22;
 
-  hornBus.connect(hornFilter);
-  hornFilter.connect(presence);
+  bellBus.connect(metallic);
+  metallic.connect(presence);
   presence.connect(compressor);
   compressor.connect(masterGain);
 
-  hornBus.gain.setValueAtTime(.0001,now);
-  hornBus.gain.exponentialRampToValueAtTime(.78,now+.12);
-  hornBus.gain.setValueAtTime(.78,now+Math.max(.24,duration-.34));
-  hornBus.gain.exponentialRampToValueAtTime(.0001,now+duration);
+  /*
+    Fast amplitude modulation mimics the repeated hammer/striker
+    of an electric alarm bell: BRRRRING rather than HONK.
+  */
+  const tremolo=audioCtx.createOscillator();
+  const tremoloDepth=audioCtx.createGain();
+  tremolo.type="square";
+  tremolo.frequency.setValueAtTime(11.5,now);
+  tremoloDepth.gain.setValueAtTime(.34,now);
+  tremolo.connect(tremoloDepth);
+  tremoloDepth.connect(bellBus.gain);
+
+  bellBus.gain.setValueAtTime(.42,now);
 
   const partials=[
-    {freq:180, type:"sawtooth", gain:.22, detune:-2},
-    {freq:240, type:"triangle", gain:.42, detune: 1},
-    {freq:360, type:"triangle", gain:.36, detune:-1},
-    {freq:480, type:"sine",     gain:.27, detune: 2},
-    {freq:720, type:"sine",     gain:.11, detune:-2}
+    {freq:180, type:"square",   gain:.12, detune:-3},
+    {freq:240, type:"triangle", gain:.26, detune: 2},
+    {freq:360, type:"square",   gain:.18, detune:-2},
+    {freq:480, type:"triangle", gain:.24, detune: 1},
+    {freq:720, type:"sine",     gain:.20, detune:-1},
+    {freq:840, type:"sine",     gain:.08, detune: 3}
   ];
 
-  partials.forEach(p=>{
+  partials.forEach((p,idx)=>{
     const o=audioCtx.createOscillator();
     const g=audioCtx.createGain();
 
     o.type=p.type;
     o.frequency.setValueAtTime(p.freq,now);
     o.detune.setValueAtTime(p.detune,now);
-    g.gain.value=p.gain;
 
-    o.frequency.linearRampToValueAtTime(p.freq*1.010,now+duration*.45);
-    o.frequency.linearRampToValueAtTime(p.freq*.996,now+duration);
+    /*
+      Slightly different decay on each partial creates a metallic bell body
+      rather than a pure synthetic tone.
+    */
+    g.gain.setValueAtTime(.0001,now);
+    g.gain.exponentialRampToValueAtTime(p.gain,now+.025+(idx*.004));
+    g.gain.setValueAtTime(p.gain,now+Math.max(.12,duration-.22));
+    g.gain.exponentialRampToValueAtTime(.0001,now+duration);
+
+    o.frequency.linearRampToValueAtTime(p.freq*1.004,now+duration*.35);
+    o.frequency.linearRampToValueAtTime(p.freq*.998,now+duration);
 
     o.connect(g);
-    g.connect(hornBus);
+    g.connect(bellBus);
 
     o.start(now);
     o.stop(now+duration+.05);
@@ -764,11 +788,46 @@ function deepHornBlast(duration=2.0){
     activeHornNodes.push(o);
   });
 
+  /*
+    Short metallic impacts throughout the 2 s blast.
+    These are the "striker" hits that make it sound like an alarm bell.
+  */
+  const hitTimes=[];
+  for(let t=.02;t<duration;t+=.087){
+    hitTimes.push(t);
+  }
+
+  hitTimes.forEach((offset,i)=>{
+    const id=setTimeout(()=>{
+      if(!audioReady||muted)return;
+
+      noiseBurst(
+        i%3===0 ? .085 : .055,
+        .035,
+        i%2===0 ? 1700 : 1250
+      );
+
+      playTone(
+        i%2===0 ? 720 : 480,
+        .045,
+        .055,
+        "square",
+        i%2===0 ? 540 : 390
+      );
+    },offset*1000);
+
+    hornTimers.push(id);
+  });
+
+  tremolo.start(now);
+  tremolo.stop(now+duration+.02);
+
   setTimeout(()=>{
-    try{hornBus.disconnect()}catch(e){}
-    try{hornFilter.disconnect()}catch(e){}
+    try{bellBus.disconnect()}catch(e){}
+    try{metallic.disconnect()}catch(e){}
     try{presence.disconnect()}catch(e){}
     try{compressor.disconnect()}catch(e){}
+    try{tremoloDepth.disconnect()}catch(e){}
   },(duration+.3)*1000);
 }
 
