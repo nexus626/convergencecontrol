@@ -706,57 +706,67 @@ function deepHornBlast(duration=2.0){
   const now=audioCtx.currentTime;
 
   /*
-    Electromechanical industrial/school alarm bell:
-    same audible frequency region as the previous version,
-    but with metallic partials and a rapid mechanical tremolo
-    instead of a horn-like sustained vowel.
+    Acoustic/mechanical warning siren:
+    same audible frequency band as the approved version,
+    but continuous and rough rather than bell-like.
   */
-  const bellBus=audioCtx.createGain();
-  const metallic=audioCtx.createBiquadFilter();
+  const sirenBus=audioCtx.createGain();
+  const bodyFilter=audioCtx.createBiquadFilter();
   const presence=audioCtx.createBiquadFilter();
   const compressor=audioCtx.createDynamicsCompressor();
 
-  metallic.type="bandpass";
-  metallic.frequency.setValueAtTime(470,now);
-  metallic.Q.value=.65;
+  bodyFilter.type="bandpass";
+  bodyFilter.frequency.setValueAtTime(430,now);
+  bodyFilter.Q.value=.55;
 
   presence.type="peaking";
-  presence.frequency.setValueAtTime(720,now);
-  presence.Q.value=.8;
-  presence.gain.value=5;
+  presence.frequency.setValueAtTime(520,now);
+  presence.Q.value=.75;
+  presence.gain.value=4.8;
 
-  compressor.threshold.value=-22;
+  compressor.threshold.value=-20;
   compressor.knee.value=10;
-  compressor.ratio.value=5;
-  compressor.attack.value=.004;
-  compressor.release.value=.22;
+  compressor.ratio.value=4.2;
+  compressor.attack.value=.006;
+  compressor.release.value=.28;
 
-  bellBus.connect(metallic);
-  metallic.connect(presence);
+  sirenBus.connect(bodyFilter);
+  bodyFilter.connect(presence);
   presence.connect(compressor);
   compressor.connect(masterGain);
 
+  sirenBus.gain.setValueAtTime(.0001,now);
+  sirenBus.gain.exponentialRampToValueAtTime(.70,now+.10);
+  sirenBus.gain.setValueAtTime(.70,now+Math.max(.22,duration-.26));
+  sirenBus.gain.exponentialRampToValueAtTime(.0001,now+duration);
+
   /*
-    Fast amplitude modulation mimics the repeated hammer/striker
-    of an electric alarm bell: BRRRRING rather than HONK.
+    Mechanical rotor modulation.
+    This adds the "waaah/rrr" acoustic siren texture without going shrill.
   */
-  const tremolo=audioCtx.createOscillator();
-  const tremoloDepth=audioCtx.createGain();
-  tremolo.type="square";
-  tremolo.frequency.setValueAtTime(11.5,now);
-  tremoloDepth.gain.setValueAtTime(.34,now);
-  tremolo.connect(tremoloDepth);
-  tremoloDepth.connect(bellBus.gain);
+  const rotor=audioCtx.createOscillator();
+  const rotorDepth=audioCtx.createGain();
 
-  bellBus.gain.setValueAtTime(.42,now);
+  rotor.type="sine";
+  rotor.frequency.setValueAtTime(6.8,now);
+  rotor.frequency.linearRampToValueAtTime(7.8,now+duration*.5);
+  rotor.frequency.linearRampToValueAtTime(6.6,now+duration);
 
+  rotorDepth.gain.setValueAtTime(.20,now);
+
+  rotor.connect(rotorDepth);
+  rotorDepth.connect(sirenBus.gain);
+
+  /*
+    Main partials stay in the same useful range as POINT2C.
+    Small detuning makes the siren sound acoustic/mechanical instead of synthetic.
+  */
   const partials=[
-    {freq:180, type:"square",   gain:.12, detune:-3},
-    {freq:240, type:"triangle", gain:.26, detune: 2},
-    {freq:360, type:"square",   gain:.18, detune:-2},
-    {freq:480, type:"triangle", gain:.24, detune: 1},
-    {freq:720, type:"sine",     gain:.20, detune:-1},
-    {freq:840, type:"sine",     gain:.08, detune: 3}
+    {freq:180, type:"sawtooth", gain:.18, detune:-5},
+    {freq:240, type:"sawtooth", gain:.27, detune: 3},
+    {freq:360, type:"triangle", gain:.32, detune:-2},
+    {freq:480, type:"triangle", gain:.25, detune: 2},
+    {freq:720, type:"sine",     gain:.10, detune:-3}
   ];
 
   partials.forEach((p,idx)=>{
@@ -767,20 +777,20 @@ function deepHornBlast(duration=2.0){
     o.frequency.setValueAtTime(p.freq,now);
     o.detune.setValueAtTime(p.detune,now);
 
-    /*
-      Slightly different decay on each partial creates a metallic bell body
-      rather than a pure synthetic tone.
-    */
     g.gain.setValueAtTime(.0001,now);
-    g.gain.exponentialRampToValueAtTime(p.gain,now+.025+(idx*.004));
-    g.gain.setValueAtTime(p.gain,now+Math.max(.12,duration-.22));
+    g.gain.exponentialRampToValueAtTime(p.gain,now+.04+(idx*.006));
+    g.gain.setValueAtTime(p.gain,now+Math.max(.18,duration-.18));
     g.gain.exponentialRampToValueAtTime(.0001,now+duration);
 
-    o.frequency.linearRampToValueAtTime(p.freq*1.004,now+duration*.35);
-    o.frequency.linearRampToValueAtTime(p.freq*.998,now+duration);
+    /*
+      Slow pitch sweep gives the acoustic warning-siren feel:
+      slight rise, then fall, all within the approved frequency range.
+    */
+    o.frequency.linearRampToValueAtTime(p.freq*1.055,now+duration*.45);
+    o.frequency.linearRampToValueAtTime(p.freq*.985,now+duration);
 
     o.connect(g);
-    g.connect(bellBus);
+    g.connect(sirenBus);
 
     o.start(now);
     o.stop(now+duration+.05);
@@ -789,45 +799,52 @@ function deepHornBlast(duration=2.0){
   });
 
   /*
-    Short metallic impacts throughout the 2 s blast.
-    These are the "striker" hits that make it sound like an alarm bell.
+    Air/rotor noise gives a physical siren body.
+    Kept subtle so speech and plasma remain audible.
   */
-  const hitTimes=[];
-  for(let t=.02;t<duration;t+=.087){
-    hitTimes.push(t);
+  const noiseBuffer=audioCtx.createBuffer(
+    1,
+    Math.floor(audioCtx.sampleRate*duration),
+    audioCtx.sampleRate
+  );
+  const noiseData=noiseBuffer.getChannelData(0);
+
+  for(let i=0;i<noiseData.length;i++){
+    noiseData[i]=(Math.random()*2-1);
   }
 
-  hitTimes.forEach((offset,i)=>{
-    const id=setTimeout(()=>{
-      if(!audioReady||muted)return;
+  const noiseSrc=audioCtx.createBufferSource();
+  const noiseFilter=audioCtx.createBiquadFilter();
+  const noiseGain=audioCtx.createGain();
 
-      noiseBurst(
-        i%3===0 ? .085 : .055,
-        .035,
-        i%2===0 ? 1700 : 1250
-      );
+  noiseSrc.buffer=noiseBuffer;
 
-      playTone(
-        i%2===0 ? 720 : 480,
-        .045,
-        .055,
-        "square",
-        i%2===0 ? 540 : 390
-      );
-    },offset*1000);
+  noiseFilter.type="bandpass";
+  noiseFilter.frequency.setValueAtTime(560,now);
+  noiseFilter.Q.value=.8;
 
-    hornTimers.push(id);
-  });
+  noiseGain.gain.setValueAtTime(.0001,now);
+  noiseGain.gain.exponentialRampToValueAtTime(.055,now+.08);
+  noiseGain.gain.setValueAtTime(.055,now+Math.max(.15,duration-.18));
+  noiseGain.gain.exponentialRampToValueAtTime(.0001,now+duration);
 
-  tremolo.start(now);
-  tremolo.stop(now+duration+.02);
+  noiseSrc.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(sirenBus);
+
+  rotor.start(now);
+  rotor.stop(now+duration+.02);
+  noiseSrc.start(now);
+  noiseSrc.stop(now+duration);
 
   setTimeout(()=>{
-    try{bellBus.disconnect()}catch(e){}
-    try{metallic.disconnect()}catch(e){}
+    try{sirenBus.disconnect()}catch(e){}
+    try{bodyFilter.disconnect()}catch(e){}
     try{presence.disconnect()}catch(e){}
     try{compressor.disconnect()}catch(e){}
-    try{tremoloDepth.disconnect()}catch(e){}
+    try{rotorDepth.disconnect()}catch(e){}
+    try{noiseFilter.disconnect()}catch(e){}
+    try{noiseGain.disconnect()}catch(e){}
   },(duration+.3)*1000);
 }
 
