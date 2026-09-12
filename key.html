@@ -1,11 +1,33 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Convergence — Key</title><script src="remote-config.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle,#0b1b35,#02040a 60%);color:#eef7ff;font-family:"Courier New",monospace}.card{width:min(520px,100%);border:1px solid rgba(140,200,255,.28);background:rgba(3,10,22,.9);padding:26px;text-align:center}.card small{color:#7f96ad;letter-spacing:.16em}.card h1{font-weight:400;letter-spacing:.1em}.card p{color:#9fd8ff;line-height:1.6}.id{margin:20px auto;border:1px solid rgba(140,200,255,.25);padding:12px;width:220px}.id b{display:block;color:#a5ffd6;margin-top:5px}.emergency{color:#ff7989;border:1px solid rgba(255,90,110,.45);padding:15px;margin-top:18px}.restored{color:#a5ffd6;border:1px solid rgba(165,255,214,.4);padding:15px;margin-top:18px}.hidden{display:none}
-</style></head><body><div class="card"><small>CONVERGENCE KEY</small><h1 id="title">CLEARANCE ACTIVE</h1><p id="text">Variant access verified. Convergence coverage confirmed.</p><div class="id"><small>KEY ID</small><b id="key">CX-KEY</b></div><div id="em" class="emergency hidden"><b>⚠ CLEARANCE REVOKED</b><p>CASCADE FAILURE DETECTED. Retrieve DOSSIER III and report to the Control Station.</p></div><div id="ok" class="restored hidden"><b>CLEARANCE RESTORED</b><p>Distributed Convergence stable.</p></div></div>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle,#0b1b35,#02040a 60%);color:#eef7ff;font-family:"Courier New",monospace}
+.card{width:min(540px,100%);border:1px solid rgba(140,200,255,.3);background:rgba(3,10,22,.92);padding:28px;text-align:center}.card small{color:#8ca3bb;letter-spacing:.16em}.card h1{font-weight:400;letter-spacing:.1em;font-size:30px}.card p{color:#a9ddff;line-height:1.6;font-size:15px}.id{margin:20px auto;border:1px solid rgba(140,200,255,.28);padding:13px;width:240px}.id b{display:block;color:#a5ffd6;margin-top:6px;font-size:18px}.emergency{color:#ff8291;border:1px solid rgba(255,90,110,.5);padding:16px;margin-top:18px}.restored{color:#a5ffd6;border:1px solid rgba(165,255,214,.45);padding:16px;margin-top:18px}.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <small>CONVERGENCE KEY</small>
+  <h1 id="title">CLEARANCE ACTIVE</h1>
+  <p id="text">Variant access verified. Convergence coverage confirmed.</p>
+  <div class="id"><small>KEY ID</small><b id="key">CX-KEY</b></div>
+  <div id="em" class="emergency hidden"><b>⚠ CLEARANCE REVOKED</b><p>CASCADE FAILURE DETECTED. Retrieve DOSSIER III and report to the Control Station.</p></div>
+  <div id="ok" class="restored hidden"><b>CLEARANCE RESTORED</b><p>Distributed Convergence stable.</p></div>
+</div>
 <script>
-const API_URL=window.CONV_API_URL||"";const $=id=>document.getElementById(id);$("key").textContent=(new URLSearchParams(location.search).get("key")||"CX-KEY").toUpperCase();const remote=()=>/^https:\/\/script\.google\.com\//.test(API_URL);
+const API_URL=window.CONV_API_URL||"";const $=id=>document.getElementById(id);
+$("key").textContent=(new URLSearchParams(location.search).get("key")||"CX-KEY").toUpperCase();
+const remote=()=>/^https:\/\/script\.google\.com\//.test(API_URL);
 async function state(){if(!remote())return localStorage.getItem("convergenceState")||"WELCOME";return (await (await fetch(API_URL+"?t="+Date.now(),{cache:"no-store"})).json()).state}
-async function render(){let s=await state();$("em").classList.add("hidden");$("ok").classList.add("hidden");if(s==="CASCADE"){$("title").textContent="CLEARANCE REVOKED";$("text").textContent="Emergency protocol activated.";$("em").classList.remove("hidden")}else if(s==="RESOLVED"){$("title").textContent="CLEARANCE RESTORED";$("text").textContent="Variant access verified.";$("ok").classList.remove("hidden")}else if(s==="CLEARED"||s==="AUTO_ANCHOR"){$("title").textContent="CLEARANCE APPROVED";$("text").textContent="Convergence stable. No action required."}else{$("title").textContent="CLEARANCE ACTIVE";$("text").textContent="Variant access verified. Convergence coverage confirmed."}}
+async function render(){let s=await state();$("em").classList.add("hidden");$("ok").classList.add("hidden");
+if(s==="CASCADE"){$("title").textContent="CLEARANCE REVOKED";$("text").textContent="Emergency protocol activated.";$("em").classList.remove("hidden")}
+else if(s==="RESOLVED"){$("title").textContent="CLEARANCE RESTORED";$("text").textContent="Variant access verified.";$("ok").classList.remove("hidden")}
+else if(s==="CLEARED"||s==="AUTO_ANCHOR"){$("title").textContent="CLEARANCE APPROVED";$("text").textContent="Convergence stable. No action required."}
+else{$("title").textContent="CLEARANCE ACTIVE";$("text").textContent="Variant access verified. Convergence coverage confirmed."}}
 window.addEventListener("storage",render);render();setInterval(render,1800);
-</script></body></html>
+</script>
+</body>
+</html>

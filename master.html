@@ -1,38 +1,152 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Convergence — Master Control</title><script src="remote-config.js"></script>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Convergence — Master Control</title>
+<script src="remote-config.js"></script>
 <style>
-:root{--bg:#02040a;--panel:#07101e;--line:rgba(140,200,255,.24);--accent:#9fd8ff;--text:#eef7ff;--muted:#7f96ad;--ok:#a5ffd6;--bad:#ff6478}
+:root{--bg:#02040a;--panel:#07101e;--line:rgba(140,200,255,.25);--accent:#9fd8ff;--text:#eef7ff;--muted:#8298af;--ok:#a5ffd6;--bad:#ff6478;--warn:#ffd37b}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:22px;background:radial-gradient(circle at top,#0a1830,#02040a 55%);color:var(--text);font-family:"Courier New",monospace}
-.wrap{width:min(760px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:start;gap:15px}.top small{color:var(--muted)}h1{letter-spacing:.12em;font-weight:400}
-.card{border:1px solid var(--line);background:rgba(5,12,25,.88);padding:17px;margin:12px 0}.card small,label{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}
-.state{font-size:24px;color:var(--ok)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-button,input{font:inherit}button{padding:14px;border:1px solid rgba(140,200,255,.45);background:#09172d;color:var(--accent);cursor:pointer}button:active{transform:scale(.99)}button.bad{color:var(--bad);border-color:rgba(255,100,120,.48)}button.good{color:var(--ok);border-color:rgba(165,255,214,.48)}
-input{width:100%;padding:12px;background:#02060e;color:#fff;border:1px solid rgba(140,200,255,.42);margin-bottom:10px}.wide{width:100%}.feedback{color:#ffd37b;min-height:20px}.link{color:var(--accent)}
-@media(max-width:600px){.grid{grid-template-columns:1fr}}
-</style></head>
-<body><div class="wrap">
-<div class="top"><div><small>KEEPER ACCESS / MUSYCHEN-626</small><h1>MASTER CONTROL</h1></div><a class="link" href="index.html">STATION</a></div>
-<div class="card"><small>CURRENT GAME STATE</small><div class="state" id="state">—</div><div id="mode">LOCAL TEST MODE</div></div>
-<div class="card"><label>MASTER PIN</label><input id="pin" inputmode="numeric" placeholder="PIN"></div>
-<div class="grid">
-<button data-s="WELCOME">WELCOME / RESET VIEW</button>
-<button data-s="PHASE1">START PHASE I</button>
-<button data-s="PHASE1_COMPLETE">ARCHIVE RESTORED</button>
-<button data-s="PHASE2" class="bad">START PHASE II</button>
-<button data-s="CLEARED" class="good">COMPLETE PHASE II</button>
-<button data-s="AUTO_ANCHOR">AUTO-ANCHOR (PLAN B)</button>
-<button data-s="CASCADE" class="bad">ACTIVATE CASCADE</button>
-<button data-s="RESOLVED" class="good">FORCE RESOLVED</button>
+.wrap{width:min(780px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:start;gap:15px}.top small{color:var(--muted)}h1{letter-spacing:.12em;font-weight:400}
+.card{border:1px solid var(--line);background:rgba(5,12,25,.9);padding:18px;margin:13px 0}.card small,label{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}.state{font-size:25px;color:var(--ok)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,input{font:inherit}button{padding:14px;border:1px solid rgba(140,200,255,.48);background:#09172d;color:var(--accent);cursor:pointer;font-size:14px}button[disabled]{opacity:.28;cursor:not-allowed}button.bad{color:var(--bad);border-color:rgba(255,100,120,.5)}button.good{color:var(--ok);border-color:rgba(165,255,214,.5)}
+input{width:100%;padding:13px;background:#02060e;color:#fff;border:1px solid rgba(140,200,255,.45);margin-bottom:10px;font-size:16px}.wide{width:100%}.feedback{color:var(--warn);min-height:20px}.link{color:var(--accent)}
+.auth-ok{color:var(--ok)}.auth-bad{color:var(--bad)}.hidden{display:none!important}.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.grid,.settingsGrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><small>KEEPER ACCESS / MUSYCHEN-626</small><h1>MASTER CONTROL</h1></div>
+    <a class="link" href="index.html">CONTROL STATION</a>
+  </div>
+
+  <div class="card">
+    <label>MASTER PIN</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="ENTER MASTER PIN">
+    <button id="unlock" class="wide">SAVE PIN & UNLOCK MASTER CONTROL</button>
+    <div id="authFeedback" class="feedback"></div>
+  </div>
+
+  <div id="controls" class="hidden">
+    <div class="card">
+      <small>CURRENT GAME STATE</small>
+      <div class="state" id="state">—</div>
+      <div id="mode">LOCAL TEST MODE</div>
+    </div>
+
+    <div class="grid">
+      <button data-s="WELCOME">WELCOME / ARCHIVE ACTIVE</button>
+      <button data-s="PHASE1_COMPLETE">ARCHIVE RESTORED</button>
+      <button data-s="PHASE2" class="bad">START PHASE II</button>
+      <button data-s="AUTO_ANCHOR">AUTO-ANCHOR (PLAN B)</button>
+      <button data-s="CLEARED" class="good">COMPLETE PHASE II</button>
+      <button data-s="CASCADE" class="bad">ACTIVATE CASCADE</button>
+      <button data-s="RESOLVED" class="good">FORCE RESOLVED</button>
+    </div>
+
+    <div class="card">
+      <div class="settingsGrid">
+        <div><label>PHASE I CODE</label><input id="p1"></div>
+        <div><label>PHASE II CODE</label><input id="p2"></div>
+        <div><label>FINAL OVERRIDE COMMAND</label><input id="final"></div>
+        <div><label>CASCADE MINUTES</label><input id="minutes" type="number" min="1" max="60"></div>
+      </div>
+      <button id="saveSettings" class="wide">SAVE GAME SETTINGS</button>
+      <div id="settingsFeedback" class="feedback"></div>
+    </div>
+
+    <div class="card">
+      <button id="lock" class="wide">LOCK MASTER CONTROL</button>
+      <button id="reset" class="wide bad" style="margin-top:10px">RESET GAME STATE</button>
+      <div id="feedback" class="feedback"></div>
+    </div>
+  </div>
 </div>
-<div class="card"><button id="reset" class="wide bad">RESET GAME STATE</button><div class="feedback" id="feedback"></div></div>
-</div>
+
 <script>
-const API_URL=window.CONV_API_URL||"";const $=id=>document.getElementById(id);const remote=()=>/^https:\/\/script\.google\.com\//.test(API_URL);
-async function getState(){if(!remote())return {state:localStorage.getItem("convergenceState")||"WELCOME"};return await (await fetch(API_URL+"?t="+Date.now(),{cache:"no-store"})).json()}
-async function post(action,data={}){if(!remote()){if(action==="master_set_state"){localStorage.setItem("convergenceState",data.state);if(data.state==="CASCADE")localStorage.setItem("cascadeStart",Date.now());}if(action==="master_reset"){localStorage.clear()}return {ok:true,state:{state:localStorage.getItem("convergenceState")||"WELCOME"}}}return await (await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...data})})).json()}
-async function refresh(){try{const s=await getState();$("state").textContent=s.state;$("mode").textContent=remote()?"REMOTE SYNC ACTIVE":"LOCAL TEST MODE";}catch(e){$("mode").textContent="REMOTE CONNECTION ERROR"}}
-document.querySelectorAll("[data-s]").forEach(b=>b.onclick=async()=>{const r=await post("master_set_state",{pin:$("pin").value,state:b.dataset.s});$("feedback").textContent=r.ok?"STATE UPDATED":r.error||"ERROR";refresh()});
-$("reset").onclick=async()=>{const r=await post("master_reset",{pin:$("pin").value});$("feedback").textContent=r.ok?"GAME RESET":r.error||"ERROR";refresh()};
-window.addEventListener("storage",refresh);refresh();setInterval(refresh,2000);
-</script></body></html>
+const API_URL=window.CONV_API_URL||"";
+const LOCAL_TEST_PIN="6260";
+const $=id=>document.getElementById(id);
+const remote=()=>/^https:\/\/script\.google\.com\//.test(API_URL);
+let masterPin=sessionStorage.getItem("convMasterPin")||"";
+
+async function post(action,data={}){
+  if(!remote()){
+    if(action==="master_auth")return {ok:String(data.pin||"")===LOCAL_TEST_PIN};
+    if(String(data.pin||"")!==LOCAL_TEST_PIN)return {ok:false,error:"UNAUTHORIZED"};
+    if(action==="master_set_state"){
+      localStorage.setItem("convergenceState",data.state);
+      localStorage.setItem("stateChangedAt",Date.now());
+      if(data.state==="CASCADE")localStorage.setItem("cascadeStart",Date.now());
+      if(data.state==="WELCOME"){localStorage.removeItem("cascadeStart");localStorage.removeItem("selectedAnchor")}
+      return {ok:true,state:{state:data.state}};
+    }
+    if(action==="master_save_settings"){
+      if(data.phase1Code)localStorage.setItem("phase1Code",data.phase1Code);
+      if(data.phase2Code)localStorage.setItem("phase2Code",data.phase2Code);
+      if(data.finalCommand)localStorage.setItem("finalCommand",data.finalCommand);
+      if(data.timerMinutes)localStorage.setItem("timerMinutes",data.timerMinutes);
+      return {ok:true};
+    }
+    if(action==="master_reset"){
+      ["convergenceState","stateChangedAt","cascadeStart","selectedAnchor"].forEach(k=>localStorage.removeItem(k));
+      localStorage.setItem("convergenceState","WELCOME");
+      return {ok:true,state:{state:"WELCOME"}};
+    }
+  }
+  const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...data})});
+  return await r.json();
+}
+async function getState(){
+  if(!remote())return {state:localStorage.getItem("convergenceState")||"WELCOME"};
+  return await (await fetch(API_URL+"?t="+Date.now(),{cache:"no-store"})).json();
+}
+function setLocked(locked){
+  $("controls").classList.toggle("hidden",locked);
+  if(!locked){
+    $("p1").value=localStorage.getItem("phase1Code")||"AR-4721";
+    $("p2").value=localStorage.getItem("phase2Code")||"NOVA-2974";
+    $("final").value=localStorage.getItem("finalCommand")||"STABILIZE ALL TIMELINES";
+    $("minutes").value=localStorage.getItem("timerMinutes")||"10";
+  }
+}
+async function authenticate(pin){
+  const r=await post("master_auth",{pin});
+  if(r.ok){
+    masterPin=pin;sessionStorage.setItem("convMasterPin",pin);
+    $("authFeedback").textContent="MASTER CONTROL AUTHENTICATED";$("authFeedback").className="feedback auth-ok";
+    $("pin").value="";setLocked(false);refresh();
+  }else{
+    masterPin="";sessionStorage.removeItem("convMasterPin");
+    $("authFeedback").textContent="INVALID MASTER PIN";$("authFeedback").className="feedback auth-bad";
+    setLocked(true);
+  }
+}
+$("unlock").onclick=()=>authenticate($("pin").value);
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")authenticate($("pin").value)});
+$("lock").onclick=()=>{masterPin="";sessionStorage.removeItem("convMasterPin");setLocked(true);$("authFeedback").textContent="MASTER CONTROL LOCKED";$("authFeedback").className="feedback"};
+document.querySelectorAll("[data-s]").forEach(b=>b.onclick=async()=>{
+  const r=await post("master_set_state",{pin:masterPin,state:b.dataset.s});
+  $("feedback").textContent=r.ok?"STATE UPDATED":r.error||"ERROR";
+  if(!r.ok&&r.error==="UNAUTHORIZED"){sessionStorage.removeItem("convMasterPin");setLocked(true)}
+  refresh();
+});
+$("saveSettings").onclick=async()=>{
+  const r=await post("master_save_settings",{pin:masterPin,phase1Code:$("p1").value.trim(),phase2Code:$("p2").value.trim(),finalCommand:$("final").value.trim(),timerMinutes:$("minutes").value});
+  $("settingsFeedback").textContent=r.ok?"GAME SETTINGS SAVED":r.error||"ERROR";
+};
+$("reset").onclick=async()=>{const r=await post("master_reset",{pin:masterPin});$("feedback").textContent=r.ok?"GAME RESET":r.error||"ERROR";refresh()};
+async function refresh(){
+  if(!masterPin)return;
+  try{const s=await getState();$("state").textContent=s.state;$("mode").textContent=remote()?"REMOTE SYNC ACTIVE":"LOCAL TEST MODE"}catch(e){$("mode").textContent="REMOTE CONNECTION ERROR"}
+}
+window.addEventListener("storage",refresh);
+(async()=>{if(masterPin)await authenticate(masterPin);else setLocked(true)})();
+setInterval(refresh,2000);
+</script>
+</body>
+</html>

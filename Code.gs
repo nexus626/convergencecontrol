@@ -1,12 +1,10 @@
 /**
- * THE CONVERGENCE — shared game state backend
+ * THE CONVERGENCE — shared live state backend
  * Google Apps Script Web App
  *
- * 1) Cambia MASTER_PIN.
- * 2) Deploy > New deployment > Web app
- * 3) Execute as: Me
- * 4) Who has access: Anyone
- * 5) Copia l'URL che termina in /exec dentro remote-config.js
+ * IMPORTANT:
+ * - Keep this file in Apps Script, NOT in the public GitHub repo.
+ * - Change MASTER_PIN before the event.
  */
 
 const MASTER_PIN = "6260";
@@ -19,6 +17,7 @@ const DEFAULTS = {
   timerMinutes: "10",
   selectedAnchor: "",
   cascadeStart: "0",
+  stateChangedAt: "0",
   updatedAt: "0"
 };
 
@@ -36,12 +35,15 @@ function doPost(e) {
 
   const action = String(data.action || "");
 
+  if (action === "master_auth") {
+    return json_({ ok: String(data.pin || "") === MASTER_PIN });
+  }
+
   if (action === "validate_phase1") {
     if (normalize_(data.code) !== normalize_(get_("phase1Code"))) {
       return json_({ ok:false, error:"INVALID_CODE" });
     }
-    set_("state","PHASE1_COMPLETE");
-    touch_();
+    transition_("PHASE1_COMPLETE");
     return json_({ ok:true, state:publicState_() });
   }
 
@@ -49,9 +51,8 @@ function doPost(e) {
     if (normalize_(data.code) !== normalize_(get_("phase2Code"))) {
       return json_({ ok:false, error:"INVALID_CODE" });
     }
-    set_("state","CLEARED");
     set_("selectedAnchor","NOVA");
-    touch_();
+    transition_("CLEARED");
     return json_({ ok:true, state:publicState_() });
   }
 
@@ -59,8 +60,7 @@ function doPost(e) {
     if (normalize_(data.command) !== normalize_(get_("finalCommand"))) {
       return json_({ ok:false, error:"INVALID_COMMAND" });
     }
-    set_("state","RESOLVED");
-    touch_();
+    transition_("RESOLVED");
     return json_({ ok:true, state:publicState_() });
   }
 
@@ -71,37 +71,65 @@ function doPost(e) {
   }
 
   if (action === "master_set_state") {
-    if (String(data.pin || "") !== MASTER_PIN) return json_({ok:false,error:"UNAUTHORIZED"});
-    const allowed = ["WELCOME","PHASE1","PHASE1_COMPLETE","PHASE2","CLEARED","AUTO_ANCHOR","CASCADE","RESOLVED"];
-    const state = String(data.state || "");
-    if (allowed.indexOf(state) < 0) return json_({ok:false,error:"INVALID_STATE"});
+    if (!authorized_(data.pin)) return json_({ok:false,error:"UNAUTHORIZED"});
 
-    set_("state",state);
+    const allowed = [
+      "WELCOME",
+      "PHASE1_COMPLETE",
+      "PHASE2",
+      "CLEARED",
+      "AUTO_ANCHOR",
+      "CASCADE",
+      "RESOLVED"
+    ];
+    const next = String(data.state || "");
+    if (allowed.indexOf(next) < 0) return json_({ok:false,error:"INVALID_STATE"});
 
-    if (state === "CASCADE") {
+    if (next === "CASCADE") {
       set_("cascadeStart", String(Date.now()));
       set_("selectedAnchor","");
-    } else if (state === "WELCOME") {
+    } else if (next === "WELCOME") {
       set_("cascadeStart","0");
       set_("selectedAnchor","");
-    } else if (state === "CLEARED" || state === "AUTO_ANCHOR") {
+    } else if (next === "CLEARED" || next === "AUTO_ANCHOR") {
       set_("selectedAnchor","NOVA");
-    } else if (state === "RESOLVED") {
+    } else if (next === "RESOLVED") {
       set_("selectedAnchor","");
     }
+
+    transition_(next);
+    return json_({ok:true,state:publicState_()});
+  }
+
+  if (action === "master_save_settings") {
+    if (!authorized_(data.pin)) return json_({ok:false,error:"UNAUTHORIZED"});
+    if (data.phase1Code) set_("phase1Code", String(data.phase1Code));
+    if (data.phase2Code) set_("phase2Code", String(data.phase2Code));
+    if (data.finalCommand) set_("finalCommand", String(data.finalCommand));
+    if (data.timerMinutes) set_("timerMinutes", String(data.timerMinutes));
     touch_();
     return json_({ok:true,state:publicState_()});
   }
 
   if (action === "master_reset") {
-    if (String(data.pin || "") !== MASTER_PIN) return json_({ok:false,error:"UNAUTHORIZED"});
+    if (!authorized_(data.pin)) return json_({ok:false,error:"UNAUTHORIZED"});
     const p = PropertiesService.getScriptProperties();
     Object.keys(DEFAULTS).forEach(k => p.setProperty(k, DEFAULTS[k]));
-    touch_();
+    transition_("WELCOME");
     return json_({ok:true,state:publicState_()});
   }
 
   return json_({ ok:false, error:"UNKNOWN_ACTION" });
+}
+
+function authorized_(pin) {
+  return String(pin || "") === MASTER_PIN;
+}
+
+function transition_(state) {
+  set_("state",state);
+  set_("stateChangedAt",Date.now());
+  touch_();
 }
 
 function publicState_() {
@@ -110,6 +138,7 @@ function publicState_() {
     timerMinutes: Number(get_("timerMinutes")),
     cascadeStart: Number(get_("cascadeStart")),
     selectedAnchor: get_("selectedAnchor"),
+    stateChangedAt: Number(get_("stateChangedAt")),
     updatedAt: Number(get_("updatedAt"))
   };
 }

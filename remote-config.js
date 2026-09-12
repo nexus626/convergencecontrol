@@ -1,2 +1,2 @@
-// Incolla qui l'URL /exec della Web App Google Apps Script quando la collegheremo.
+// Shared backend URL. Leave empty for same-browser local testing.
 window.CONV_API_URL = "";

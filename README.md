@@ -1,38 +1,102 @@
-# convergencecontrol v4
+# convergencecontrol v5
 
-## Modifiche principali
-- Control Station bloccata a `100dvh`: nessuno scroll verticale.
-- Inserimento dei codici tramite popup centrale.
-- `WELCOME`: Archive Status = `PENDING`.
-- `PHASE1`: blu, stabile, Archive reconstruction.
-- `PHASE2`: modalità critica rossa con plasma/glitch/audio, **senza countdown**.
-- `CLEARED`: falsa conclusione calma.
-- `AUTO_ANCHOR`: piano B per saltare la Phase II se la serata è in ritardo.
-- `CASCADE`: rosso critico, plasma, allarme e unico countdown della serata.
-- `RESOLVED`: Timeline Integrity = `100.00%`, Distributed Anchor, Merry Christmas.
-- Web Audio generativo: cliccare `INITIALIZE AUDIO` una volta prima dell'arrivo degli ospiti.
-- Backend Google Apps Script incluso per controllo remoto da telefono.
+## Flusso aggiornato
 
-## File
-- `index.html` — Control Station
-- `master.html` — pannello Master da telefono
-- `key.html` — pagina QR / Convergence Key
-- `remote-config.js` — URL del backend
-- `Code.gs` — backend Google Apps Script
+### WELCOME = PHASE I
+La festa parte direttamente con:
+- `WELCOME TO THE CONVERGENCE`
+- `ARCHIVE RECONSTRUCTION REQUIRED`
+- `MEMORY RECORD ANOMALY`
+- `CORRUPTED PRE-CONVERGENCE ASSOCIATIONS DETECTED`
+- pulsante `ENTER ARCHIVE RECONSTRUCTION CODE`
 
-## Test locale
-Senza configurare Apps Script, le pagine continuano a funzionare con `localStorage` sullo stesso browser.
+Non esiste più un comando separato `START PHASE I`.
+
+### PHASE I COMPLETE
+Dopo il codice corretto:
+- Archive restored
+- 4 Timelines detected
+- `AUTOMATIC REFERENCE ANCHOR PENDING...`
+
+Da Master Control si può:
+- avviare PHASE II completa;
+- usare `AUTO-ANCHOR (PLAN B)` se manca tempo.
+
+### PHASE II
+- rosso / critico;
+- nessun countdown;
+- anelli di contenimento instabili;
+- scariche plasma originate dalla NOVA;
+- log tecnici autocompilati sotto il pulsante `ENTER ANCHOR PROTOCOL`;
+- allarmi industriali intermittenti.
+
+### CLEARED
+Falsa conclusione calma:
+- Primary Reference Anchor = NOVA
+- Convergence stable
+- Case closed
+
+### CASCADE
+- unica fase con countdown;
+- layout separato senza sovrapposizioni;
+- log tecnici a sinistra e destra del timer;
+- NOVA cresce e diventa più instabile man mano che il timer scende;
+- anelli tentano di contenerla;
+- plasma parte dalla NOVA;
+- quattro Timeline selezionabili;
+- `manual override` quasi nascosto sotto;
+- allarme industriale molto più frequente.
+
+### RESOLVED
+- Timeline Integrity = 100.00%
+- Distributed Anchor
+- All Timelines coexist
+- Merry Christmas
+
+## Audio
+I browser richiedono un'interazione manuale per autorizzare l'audio.
+
+Prima dell'arrivo degli ospiti sul PC:
+1. aprire `index.html`;
+2. cliccare `INITIALIZE CONTROL AUDIO`;
+3. verificare che compaia `AUDIO ONLINE`.
+
+Dopo questo click il sito può generare hum, allarmi, glitch e scariche nelle fasi critiche.
+
+## Master PIN
+`master.html` resta bloccato finché il PIN non viene validato.
+
+In modalità locale di test:
+- PIN temporaneo: `6260`.
+
+Con Google Apps Script:
+- il PIN viene verificato sul backend;
+- il PIN non deve essere inserito nei file pubblici GitHub;
+- cambiarlo dentro `Code.gs` prima della festa.
+
+Il PIN corretto viene salvato soltanto in `sessionStorage` sul telefono del Keeper, così non va reinserito per ogni comando durante quella sessione.
 
 ## Controllo remoto
-1. Crea un progetto Google Apps Script.
-2. Incolla `Code.gs`.
-3. Cambia `MASTER_PIN`.
-4. Deploy > New deployment > Web app.
-5. Execute as: Me.
-6. Access: Anyone.
-7. Copia l'URL `/exec`.
-8. In `remote-config.js`, imposta:
-   `window.CONV_API_URL = "https://script.google.com/macros/s/.../exec";`
-9. Carica/aggiorna `remote-config.js` nella root GitHub.
+File:
+- `Code.gs` → incollare in Google Apps Script, non su GitHub.
+- `remote-config.js` → contiene l'URL `/exec` della Web App.
 
-Il PC della festa può tenere aperto `index.html`; tu e Gianluca aprite `master.html` dal telefono.
+Procedura:
+1. creare progetto Apps Script;
+2. incollare `Code.gs`;
+3. cambiare `MASTER_PIN`;
+4. Deploy → New deployment → Web app;
+5. Execute as: Me;
+6. Access: Anyone;
+7. copiare URL `/exec`;
+8. inserirlo in `remote-config.js`;
+9. caricare `remote-config.js` nella repo.
+
+PC:
+- `index.html`
+
+Telefono Keepers:
+- `master.html`
+
+QR partecipanti:
+- `key.html?key=...`
