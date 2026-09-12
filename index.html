@@ -563,68 +563,279 @@ function draw(){
 
 /* audio */
 let audioCtx=null,masterGain=null,humGain=null,hum1=null,hum2=null;
-let sirenGain=null,sirenA=null,sirenB=null,sirenSweepHandle=null,sirenStopTimeout=null;
 let audioReady=false,muted=false,voiceLoopHandle=null;
 
+let hornTimers=[];
+let activeHornNodes=[];
+let phase3BatteryInterval=null;
+let hornMode=null;
+
 function initAudio(){
-  if(audioReady){audioCtx.resume();return}
+  if(audioReady){
+    audioCtx.resume();
+    updateAudioState(game.state);
+    return;
+  }
+
   audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  masterGain=audioCtx.createGain();masterGain.gain.value=.22;masterGain.connect(audioCtx.destination);
 
-  humGain=audioCtx.createGain();humGain.gain.value=.04;humGain.connect(masterGain);
-  hum1=audioCtx.createOscillator();hum1.type="sine";hum1.frequency.value=54;hum1.connect(humGain);hum1.start();
-  hum2=audioCtx.createOscillator();hum2.type="sine";hum2.frequency.value=81;hum2.connect(humGain);hum2.start();
+  masterGain=audioCtx.createGain();
+  masterGain.gain.value=.22;
+  masterGain.connect(audioCtx.destination);
 
-  sirenGain=audioCtx.createGain();sirenGain.gain.value=0;sirenGain.connect(masterGain);
-  sirenA=audioCtx.createOscillator();sirenA.type="sawtooth";sirenA.frequency.value=620;sirenA.connect(sirenGain);sirenA.start();
-  sirenB=audioCtx.createOscillator();sirenB.type="triangle";sirenB.frequency.value=930;sirenB.connect(sirenGain);sirenB.start();
-  sirenSweepHandle=setInterval(()=>{
-    if(!audioReady)return;
-    const tt=audioCtx.currentTime;
-    const w=(Math.sin(Date.now()/430)+1)/2;
-    sirenA.frequency.cancelScheduledValues(tt);
-    sirenB.frequency.cancelScheduledValues(tt);
-    sirenA.frequency.linearRampToValueAtTime(520 + w*260, tt+.12);
-    sirenB.frequency.linearRampToValueAtTime(820 + w*380, tt+.12);
-  },120);
+  humGain=audioCtx.createGain();
+  humGain.gain.value=.04;
+  humGain.connect(masterGain);
+
+  hum1=audioCtx.createOscillator();
+  hum1.type="sine";
+  hum1.frequency.value=54;
+  hum1.connect(humGain);
+  hum1.start();
+
+  hum2=audioCtx.createOscillator();
+  hum2.type="sine";
+  hum2.frequency.value=81;
+  hum2.connect(humGain);
+  hum2.start();
 
   audioReady=true;
-  $("audioGate").classList.add("online");text("audioState","AUDIO ONLINE");text("audioBtn","RESTART AUDIO");show("muteBtn",true);
+
+  $("audioGate").classList.add("online");
+  text("audioState","AUDIO ONLINE");
+  text("audioBtn","RESTART AUDIO");
+  show("muteBtn",true);
+
   updateAudioState(game.state);
   confirmTone();
 }
 
 function playTone(freq,dur=.2,vol=.16,type="sine",freq2=null){
   if(!audioReady||muted)return;
-  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.type=type;o.frequency.setValueAtTime(freq,audioCtx.currentTime);
-  if(freq2)o.frequency.linearRampToValueAtTime(freq2,audioCtx.currentTime+dur);
+
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+
+  o.type=type;
+  o.frequency.setValueAtTime(freq,audioCtx.currentTime);
+
+  if(freq2){
+    o.frequency.linearRampToValueAtTime(freq2,audioCtx.currentTime+dur);
+  }
+
   g.gain.setValueAtTime(.0001,audioCtx.currentTime);
   g.gain.exponentialRampToValueAtTime(vol,audioCtx.currentTime+.018);
   g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);
-  o.connect(g);g.connect(masterGain);o.start();o.stop(audioCtx.currentTime+dur+.03);
+
+  o.connect(g);
+  g.connect(masterGain);
+
+  o.start();
+  o.stop(audioCtx.currentTime+dur+.03);
 }
+
 function noiseBurst(vol=.08,dur=.14){
   if(!audioReady||muted)return;
-  const buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*dur),audioCtx.sampleRate);
-  const data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);
-  const src=audioCtx.createBufferSource(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
-  src.buffer=buffer;f.type="bandpass";f.frequency.value=850+Math.random()*1400;f.Q.value=1.1;g.gain.value=vol;
-  src.connect(f);f.connect(g);g.connect(masterGain);src.start();
+
+  const buffer=audioCtx.createBuffer(
+    1,
+    Math.floor(audioCtx.sampleRate*dur),
+    audioCtx.sampleRate
+  );
+
+  const data=buffer.getChannelData(0);
+
+  for(let i=0;i<data.length;i++){
+    data[i]=(Math.random()*2-1)*(1-i/data.length);
+  }
+
+  const src=audioCtx.createBufferSource();
+  const g=audioCtx.createGain();
+  const f=audioCtx.createBiquadFilter();
+
+  src.buffer=buffer;
+  f.type="bandpass";
+  f.frequency.value=850+Math.random()*1400;
+  f.Q.value=1.1;
+  g.gain.value=vol;
+
+  src.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
+
+  src.start();
 }
-function setSiren(level=0){
+
+/*
+  Deep industrial / ship-horn style blast.
+  Fundamental is deliberately low, with strong audible harmonics so that
+  laptop/TV speakers still reproduce the alarm without becoming shrill.
+*/
+function deepHornBlast(duration=2.0){
   if(!audioReady)return;
+
   const now=audioCtx.currentTime;
-  sirenGain.gain.cancelScheduledValues(now);
-  sirenGain.gain.linearRampToValueAtTime(level,now+.15);
+
+  const hornBus=audioCtx.createGain();
+  const lowPass=audioCtx.createBiquadFilter();
+  const compressor=audioCtx.createDynamicsCompressor();
+
+  lowPass.type="lowpass";
+  lowPass.frequency.setValueAtTime(620,now);
+  lowPass.Q.value=.72;
+
+  compressor.threshold.value=-18;
+  compressor.knee.value=14;
+  compressor.ratio.value=4;
+  compressor.attack.value=.01;
+  compressor.release.value=.35;
+
+  hornBus.connect(lowPass);
+  lowPass.connect(compressor);
+  compressor.connect(masterGain);
+
+  // Slow attack + sustained blast + slow release = horn, not violin/synth beep.
+  hornBus.gain.setValueAtTime(.0001,now);
+  hornBus.gain.exponentialRampToValueAtTime(.66,now+.16);
+  hornBus.gain.setValueAtTime(.66,now+Math.max(.28,duration-.38));
+  hornBus.gain.exponentialRampToValueAtTime(.0001,now+duration);
+
+  const partials=[
+    {freq:98.0,  type:"sine",     gain:.56, detune:-3},
+    {freq:147.0, type:"triangle", gain:.34, detune: 2},
+    {freq:196.0, type:"triangle", gain:.25, detune:-2},
+    {freq:294.0, type:"sine",     gain:.12, detune: 4}
+  ];
+
+  partials.forEach(p=>{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+
+    o.type=p.type;
+    o.frequency.setValueAtTime(p.freq,now);
+    o.detune.setValueAtTime(p.detune,now);
+    g.gain.value=p.gain;
+
+    // Tiny slow pitch movement adds mechanical horn character
+    // without making it a high-pitched siren sweep.
+    o.frequency.linearRampToValueAtTime(p.freq*1.018,now+duration*.42);
+    o.frequency.linearRampToValueAtTime(p.freq*.992,now+duration);
+
+    o.connect(g);
+    g.connect(hornBus);
+
+    o.start(now);
+    o.stop(now+duration+.05);
+
+    activeHornNodes.push(o);
+  });
+
+  // Low rumble component for physical weight.
+  const rumble=audioCtx.createOscillator();
+  const rumbleGain=audioCtx.createGain();
+
+  rumble.type="sine";
+  rumble.frequency.setValueAtTime(49,now);
+  rumbleGain.gain.value=.18;
+
+  rumble.connect(rumbleGain);
+  rumbleGain.connect(hornBus);
+
+  rumble.start(now);
+  rumble.stop(now+duration+.05);
+
+  activeHornNodes.push(rumble);
+
+  setTimeout(()=>{
+    try{hornBus.disconnect()}catch(e){}
+    try{lowPass.disconnect()}catch(e){}
+    try{compressor.disconnect()}catch(e){}
+    activeHornNodes=activeHornNodes.filter(n=>{
+      try{return n.context && n.context.state!=="closed"}catch(e){return false}
+    });
+  },(duration+.25)*1000);
 }
-function startSiren(mode,durationMs=0){
-  if(!audioReady||muted)return;
-  clearTimeout(sirenStopTimeout);
-  setSiren(mode==="cascade"?.18:.11);
-  if(durationMs>0)sirenStopTimeout=setTimeout(()=>setSiren(0),durationMs);
+
+function clearHornTimers(){
+  hornTimers.forEach(id=>clearTimeout(id));
+  hornTimers=[];
 }
-function stopSiren(){clearTimeout(sirenStopTimeout); if(audioReady) setSiren(0);}
+
+function stopHornPattern(){
+  clearHornTimers();
+
+  if(phase3BatteryInterval){
+    clearInterval(phase3BatteryInterval);
+    phase3BatteryInterval=null;
+  }
+
+  activeHornNodes.forEach(node=>{
+    try{node.stop()}catch(e){}
+  });
+
+  activeHornNodes=[];
+  hornMode=null;
+}
+
+/*
+  One alarm battery:
+  2.0 s horn
+  0.5 s pause
+  2.0 s horn
+  0.5 s pause
+  2.0 s horn
+
+  Total battery length: 7.0 s
+*/
+function playHornBattery(){
+  if(!audioReady)return;
+
+  deepHornBlast(2.0);
+
+  hornTimers.push(
+    setTimeout(()=>deepHornBlast(2.0),2500)
+  );
+
+  hornTimers.push(
+    setTimeout(()=>deepHornBlast(2.0),5000)
+  );
+}
+
+function startPhase2Horn(){
+  if(!audioReady)return;
+  if(hornMode==="phase2")return;
+
+  stopHornPattern();
+  hornMode="phase2";
+
+  playHornBattery();
+}
+
+function startCascadeHorn(){
+  if(!audioReady)return;
+  if(hornMode==="cascade")return;
+
+  stopHornPattern();
+  hornMode="cascade";
+
+  // Immediate 3-blast battery.
+  playHornBattery();
+
+  // Battery lasts 7 s; wait another 3 s, then repeat.
+  phase3BatteryInterval=setInterval(()=>{
+    if(game.state!=="CASCADE"){
+      stopHornPattern();
+      return;
+    }
+    playHornBattery();
+  },10000);
+}
+
+/* Compatibility name used by the existing RESOLVED render logic. */
+function stopSiren(){
+  stopHornPattern();
+}
+
 function getApprovedEnglishVoice(){
   if(!("speechSynthesis" in window)) return null;
 
@@ -694,40 +905,112 @@ function speakWarning(){
 
   window.speechSynthesis.speak(u);
 }
+
 function startVoiceLoop(){
   stopVoiceLoop();
   speakWarning();
-  voiceLoopHandle=setInterval(()=>speakWarning(),9000);
+
+  voiceLoopHandle=setInterval(()=>{
+    if(game.state==="CASCADE"){
+      speakWarning();
+    }
+  },9000);
 }
-function stopVoiceLoop(){ if(voiceLoopHandle){clearInterval(voiceLoopHandle);voiceLoopHandle=null;} if("speechSynthesis" in window) window.speechSynthesis.cancel(); }
-function confirmTone(){playTone(520,.13,.10,"sine",820);setTimeout(()=>playTone(820,.16,.08,"sine",1040),120)}
-function errorTone(){playTone(210,.28,.16,"sawtooth",85);noiseBurst(.09,.18)}
+
+function stopVoiceLoop(){
+  if(voiceLoopHandle){
+    clearInterval(voiceLoopHandle);
+    voiceLoopHandle=null;
+  }
+
+  if("speechSynthesis" in window){
+    window.speechSynthesis.cancel();
+  }
+}
+
+function confirmTone(){
+  playTone(520,.13,.10,"sine",820);
+  setTimeout(()=>playTone(820,.16,.08,"sine",1040),120);
+}
+
+function errorTone(){
+  playTone(210,.28,.16,"sawtooth",85);
+  noiseBurst(.09,.18);
+}
+
 function audioEvent(type){
   if(!audioReady)return;
+
   if(type==="phase2_entry"){
-    startSiren("phase2",5000);
+    startPhase2Horn();
     speakWarning();
-    setTimeout(()=>noiseBurst(.07,.12),600);
   }
+
   if(type==="cascade_entry"){
-    startSiren("cascade",0);
+    startCascadeHorn();
     startVoiceLoop();
-    setTimeout(()=>noiseBurst(.1,.18),300);
-    setTimeout(()=>noiseBurst(.1,.18),1200);
   }
-  if(type==="attempt"){ noiseBurst(.11,.22); errorTone(); }
-  if(type==="plasma")noiseBurst(.08,.12);
+
+  if(type==="attempt"){
+    errorTone();
+  }
+
+  if(type==="plasma"){
+    noiseBurst(.06,.10);
+  }
 }
+
 function updateAudioState(s){
   if(!audioReady)return;
+
   const now=audioCtx.currentTime;
+
   humGain.gain.cancelScheduledValues(now);
-  humGain.gain.linearRampToValueAtTime(s==="PHASE2"?.055:s==="CASCADE"?.072:.035,now+.4);
-  if(s!=="CASCADE")stopVoiceLoop();
-  if(s!=="CASCADE" && s!=="PHASE2")stopSiren();
+  humGain.gain.linearRampToValueAtTime(
+    s==="PHASE2" ? .055 :
+    s==="CASCADE" ? .072 :
+    .035,
+    now+.4
+  );
+
+  if(s==="PHASE2"){
+    startPhase2Horn();
+    stopVoiceLoop();
+  }
+  else if(s==="CASCADE"){
+    startCascadeHorn();
+
+    if(!voiceLoopHandle){
+      startVoiceLoop();
+    }
+  }
+  else{
+    stopHornPattern();
+    stopVoiceLoop();
+  }
 }
+
 $("audioBtn").onclick=initAudio;
-$("muteBtn").onclick=()=>{muted=!muted;masterGain.gain.value=muted?0:.22;text("muteBtn",muted?"UNMUTE":"MUTE");if(muted)stopVoiceLoop();else if(game.state==="CASCADE")startVoiceLoop();};
+
+$("muteBtn").onclick=()=>{
+  muted=!muted;
+
+  masterGain.gain.value=muted ? 0 : .22;
+
+  text(
+    "muteBtn",
+    muted ? "UNMUTE" : "MUTE"
+  );
+
+  if(muted){
+    stopVoiceLoop();
+  }
+  else if(game.state==="CASCADE"){
+    if(!voiceLoopHandle){
+      startVoiceLoop();
+    }
+  }
+};
 
 if("speechSynthesis" in window){
   window.speechSynthesis.getVoices();
