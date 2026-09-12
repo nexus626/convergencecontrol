@@ -625,14 +625,40 @@ function startSiren(mode,durationMs=0){
   if(durationMs>0)sirenStopTimeout=setTimeout(()=>setSiren(0),durationMs);
 }
 function stopSiren(){clearTimeout(sirenStopTimeout); if(audioReady) setSiren(0);}
+function getEnglishVoice(){
+  if(!("speechSynthesis" in window)) return null;
+
+  const voices = window.speechSynthesis.getVoices();
+
+  return (
+    voices.find(v => /^en-US$/i.test(v.lang || "")) ||
+    voices.find(v => /^en-GB$/i.test(v.lang || "")) ||
+    voices.find(v => /^en-/i.test(v.lang || "")) ||
+    null
+  );
+}
+
 function speakWarning(){
   if(muted || !("speechSynthesis" in window)) return;
+
+  const v = getEnglishVoice();
+
+  // If there is no real English voice installed, do not speak at all.
+  // This avoids Italian TTS reading English phonetically.
+  if(!v) return;
+
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance("Warning. Primary anchor instability.");
-  const voices = window.speechSynthesis.getVoices();
-  const v = voices.find(x=>/english/i.test(x.lang||"")) || voices[0];
-  if(v) u.voice=v;
-  u.rate=.88; u.pitch=.62; u.volume=1;
+
+  const u = new SpeechSynthesisUtterance(
+    "Warning. Primary anchor instability."
+  );
+
+  u.voice = v;
+  u.lang = v.lang || "en-US";
+  u.rate = 0.84;
+  u.pitch = 0.64;
+  u.volume = 1;
+
   window.speechSynthesis.speak(u);
 }
 function startVoiceLoop(){
@@ -669,6 +695,14 @@ function updateAudioState(s){
 }
 $("audioBtn").onclick=initAudio;
 $("muteBtn").onclick=()=>{muted=!muted;masterGain.gain.value=muted?0:.22;text("muteBtn",muted?"UNMUTE":"MUTE");if(muted)stopVoiceLoop();else if(game.state==="CASCADE")startVoiceLoop();};
+
+if("speechSynthesis" in window){
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+  };
+}
+
 /* misc */
 setInterval(()=>text("clock",new Date().toLocaleTimeString("it-IT",{hour12:false})),1000);
 setInterval(()=>{text("drift","+"+(0.002+Math.random()*.003).toFixed(4)+"%");text("systemCode","CX-"+Math.floor(1000+Math.random()*9000))},5000);
