@@ -319,8 +319,9 @@ body.phase2.phase2-live #normalCosmos .r3{
 }
 
 
+
 /* =========================================================
-   FESTIVE FINAL OVERLAY
+   FESTIVE FINAL OVERLAY — V2
    ========================================================= */
 .hero .title-line{
   display:block;
@@ -348,6 +349,7 @@ body.resolved #subtitle{
   position:absolute;
   inset:0;
   overflow:hidden;
+  z-index:1;
 }
 
 .snowflake{
@@ -378,121 +380,141 @@ body.resolved #subtitle{
   }
 }
 
-.light-string{
+/*
+  Stranger-Things-like Christmas glows:
+  distributed in the "space" rather than framing the screen.
+  Positions deliberately avoid the central text/readout area.
+*/
+.festive-light-space{
   position:absolute;
-  display:flex;
-  gap:8px;
-  z-index:2;
+  inset:0;
+  z-index:0;
   pointer-events:none;
 }
 
-.light-string.top,
-.light-string.bottom{
-  left:10px;
-  right:10px;
-  justify-content:space-between;
-}
-
-.light-string.top{
-  top:6px;
-}
-.light-string.bottom{
-  bottom:6px;
-}
-
-.light-string.left,
-.light-string.right{
-  top:12px;
-  bottom:12px;
-  width:26px;
-  flex-direction:column;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.light-string.left{ left:6px; }
-.light-string.right{ right:6px; }
-
-.bulb{
-  position:relative;
-  width:14px;
-  height:18px;
-  border-radius:50% 50% 45% 45%;
-  background:var(--bulb,#ff5959);
+.space-bulb{
+  position:absolute;
+  width:9px;
+  height:12px;
+  border-radius:50% 50% 48% 48%;
+  background:var(--bulb,#ff5d5d);
+  opacity:.16;
+  filter:brightness(.65);
   box-shadow:
-    0 0 7px var(--bulb,#ff5959),
-    0 0 16px color-mix(in srgb, var(--bulb,#ff5959) 72%, white 28%),
-    0 0 28px color-mix(in srgb, var(--bulb,#ff5959) 58%, white 42%);
-  animation:bulbBlink 1.5s ease-in-out infinite;
-  animation-delay:var(--blink,0s);
-  opacity:.96;
+    0 0 4px var(--bulb,#ff5d5d),
+    0 0 10px var(--bulb,#ff5d5d),
+    0 0 24px color-mix(in srgb, var(--bulb,#ff5d5d) 78%, transparent),
+    0 0 48px color-mix(in srgb, var(--bulb,#ff5d5d) 42%, transparent);
+  animation:
+    spaceBulbGlow var(--glowDur,3.4s) ease-in-out infinite,
+    spaceBulbDrift var(--driftDur,9s) ease-in-out infinite;
+  animation-delay:
+    var(--glowDelay,0s),
+    var(--driftDelay,0s);
 }
 
-.bulb::before{
+.space-bulb::before{
   content:"";
   position:absolute;
-  top:-5px;
   left:50%;
+  top:-3px;
   transform:translateX(-50%);
-  width:8px;
-  height:6px;
+  width:5px;
+  height:4px;
   border-radius:2px 2px 0 0;
-  background:#39424d;
-  box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
+  background:rgba(69,81,93,.72);
 }
 
-.bulb::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:-9px;
-  width:2px;
-  height:10px;
-  transform:translateX(-50%);
-  background:rgba(226,236,255,.18);
-}
-
-.light-string.top .bulb:nth-child(odd),
-.light-string.bottom .bulb:nth-child(odd){
-  transform:translateY(4px);
-}
-.light-string.left .bulb:nth-child(odd),
-.light-string.right .bulb:nth-child(odd){
-  transform:translateX(2px);
-}
-.light-string.left .bulb:nth-child(even),
-.light-string.right .bulb:nth-child(even){
-  transform:translateX(-2px);
-}
-
-@keyframes bulbBlink{
+@keyframes spaceBulbGlow{
   0%,100%{
-    filter:brightness(.88);
-    opacity:.84;
+    opacity:.10;
+    filter:brightness(.55);
+    box-shadow:
+      0 0 2px var(--bulb),
+      0 0 7px color-mix(in srgb, var(--bulb) 60%, transparent);
   }
-  50%{
-    filter:brightness(1.23);
-    opacity:1;
+  18%{
+    opacity:.22;
+    filter:brightness(.82);
+  }
+  44%{
+    opacity:.92;
+    filter:brightness(1.28);
+    box-shadow:
+      0 0 6px var(--bulb),
+      0 0 16px var(--bulb),
+      0 0 34px color-mix(in srgb, var(--bulb) 80%, transparent),
+      0 0 64px color-mix(in srgb, var(--bulb) 40%, transparent);
+  }
+  64%{
+    opacity:.34;
+    filter:brightness(.80);
+  }
+  82%{
+    opacity:.70;
+    filter:brightness(1.08);
   }
 }
 
-body.resolved .light-string.top::before,
-body.resolved .light-string.bottom::before{
-  content:"";
-  position:absolute;
-  left:10px;
-  right:10px;
-  top:3px;
-  border-top:2px solid rgba(188,218,255,.11);
+@keyframes spaceBulbDrift{
+  0%,100%{transform:translate3d(0,0,0)}
+  50%{transform:translate3d(var(--dx,3px),var(--dy,-4px),0)}
 }
-body.resolved .light-string.left::before,
-body.resolved .light-string.right::before{
-  content:"";
-  position:absolute;
-  top:10px;
-  bottom:10px;
-  left:12px;
-  border-left:2px solid rgba(188,218,255,.11);
+
+body.resolved .resolved-card{
+  position:relative;
+  z-index:3;
+}
+
+
+
+body.resolved #title .title-line{
+  display:block;
+  opacity:0;
+  will-change:opacity,transform,filter;
+}
+
+/* =========================================================
+   SMOOTH RESOLUTION → CHRISTMAS TRANSITION
+   ========================================================= */
+
+/* Avoid an instantaneous background jump when RESOLVED is entered. */
+body.resolved{
+  background:#010309;
+}
+
+/* Dynamic atmosphere sits behind the existing Control Station UI. */
+.resolution-atmosphere{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  background:
+    radial-gradient(circle at center,
+      rgba(110,0,18,.90) 0%,
+      rgba(28,2,9,.82) 44%,
+      rgba(1,3,8,.98) 100%);
+}
+
+/* The screen remains above the atmosphere. */
+.screen{
+  z-index:2;
+}
+
+/* Festive layers are individually faded in by JS. */
+.festive-light-space,
+.snow-field{
+  opacity:0;
+  transition:none;
+}
+
+body.resolved #eyebrow,
+body.resolved #title,
+body.resolved #subtitle,
+body.resolved .status,
+body.resolved #resolvedCard{
+  will-change:opacity,transform,filter;
 }
 
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
@@ -500,6 +522,7 @@ body.resolved .light-string.right::before{
 </head>
 <body>
 <canvas id="plasma"></canvas>
+<div id="resolutionAtmosphere" class="resolution-atmosphere"></div>
 
 <div class="screen">
 <header>
@@ -593,11 +616,8 @@ body.resolved .light-string.right::before{
 
 
 <div id="festiveOverlay" class="festive-overlay hidden">
+  <div id="festiveLightSpace" class="festive-light-space"></div>
   <div class="snow-field" id="snowField"></div>
-  <div class="light-string top" id="lightsTop"></div>
-  <div class="light-string right" id="lightsRight"></div>
-  <div class="light-string bottom" id="lightsBottom"></div>
-  <div class="light-string left" id="lightsLeft"></div>
 </div>
 
 <div id="phaseWarning" class="phase-warning">
@@ -646,6 +666,10 @@ const PHASE_WARNING_MS=7000;
 let festiveLoopHandle=null;
 let festiveNoteTimers=[];
 let festiveDecorBuilt=false;
+const RESOLVED_TRANSITION_MS=5800;
+const FESTIVE_LIGHTS_START_MS=2300;
+const FESTIVE_SNOW_START_MS=2850;
+const FESTIVE_MUSIC_START_MS=3600;
 let bolts=[];
 
 
@@ -653,41 +677,70 @@ function buildFestiveDecor(){
   if(festiveDecorBuilt)return;
   festiveDecorBuilt=true;
 
-  const colors=["#ff5959","#ffd84d","#6de8ff","#82ff8d","#c58cff","#ff8ab7"];
-  const strings=[
-    ["lightsTop",26],
-    ["lightsBottom",26],
-    ["lightsLeft",15],
-    ["lightsRight",15]
+  const colors=[
+    "#ff5f63",
+    "#ffd85a",
+    "#79e9ff",
+    "#75ff9b",
+    "#bc82ff",
+    "#ff8bc8"
   ];
 
-  strings.forEach(([id,count])=>{
-    const host=$(id);
-    if(!host)return;
-    host.innerHTML="";
-    for(let i=0;i<count;i++){
+  /*
+    Keep bulbs out of the central readable zone.
+    They are distributed in four peripheral spatial bands.
+  */
+  const zones=[
+    {x1:3,  x2:27, y1:8,  y2:90},
+    {x1:73, x2:97, y1:8,  y2:90},
+    {x1:27, x2:73, y1:4,  y2:22},
+    {x1:27, x2:73, y1:78, y2:96}
+  ];
+
+  const space=$("festiveLightSpace");
+  if(space){
+    space.innerHTML="";
+
+    for(let i=0;i<34;i++){
+      const z=zones[i%zones.length];
       const bulb=document.createElement("i");
-      bulb.className="bulb";
+      bulb.className="space-bulb";
+
+      const x=z.x1+Math.random()*(z.x2-z.x1);
+      const y=z.y1+Math.random()*(z.y2-z.y1);
+
+      bulb.style.left=`${x}%`;
+      bulb.style.top=`${y}%`;
       bulb.style.setProperty("--bulb",colors[i%colors.length]);
-      bulb.style.setProperty("--blink",`${(i%6)*0.18}s`);
-      host.appendChild(bulb);
+      bulb.style.setProperty("--glowDur",`${2.2+Math.random()*3.8}s`);
+      bulb.style.setProperty("--glowDelay",`${-Math.random()*5}s`);
+      bulb.style.setProperty("--driftDur",`${7+Math.random()*7}s`);
+      bulb.style.setProperty("--driftDelay",`${-Math.random()*8}s`);
+      bulb.style.setProperty("--dx",`${-5+Math.random()*10}px`);
+      bulb.style.setProperty("--dy",`${-6+Math.random()*12}px`);
+
+      const size=.72+Math.random()*.72;
+      bulb.style.transform=`scale(${size})`;
+
+      space.appendChild(bulb);
     }
-  });
+  }
 
   const snow=$("snowField");
   if(snow){
     snow.innerHTML="";
     const flakeSymbols=["•","•","✦","❄","·"];
-    for(let i=0;i<64;i++){
+
+    for(let i=0;i<72;i++){
       const flake=document.createElement("span");
       flake.className="snowflake";
       flake.textContent=flakeSymbols[i%flakeSymbols.length];
       flake.style.left=`${Math.random()*100}%`;
-      flake.style.fontSize=`${8+Math.random()*11}px`;
-      flake.style.setProperty("--dur",`${9+Math.random()*10}s`);
-      flake.style.setProperty("--delay",`${-Math.random()*18}s`);
-      flake.style.setProperty("--drift",`${-32+Math.random()*64}px`);
-      flake.style.setProperty("--alpha",`${0.35+Math.random()*0.55}`);
+      flake.style.fontSize=`${7+Math.random()*11}px`;
+      flake.style.setProperty("--dur",`${9+Math.random()*11}s`);
+      flake.style.setProperty("--delay",`${-Math.random()*20}s`);
+      flake.style.setProperty("--drift",`${-34+Math.random()*68}px`);
+      flake.style.setProperty("--alpha",`${0.28+Math.random()*0.58}`);
       snow.appendChild(flake);
     }
   }
@@ -697,6 +750,186 @@ function setFestiveOverlay(on){
   buildFestiveDecor();
   show("festiveOverlay",on);
 }
+
+
+function easeResolve(v){
+  v=Math.max(0,Math.min(1,v));
+  return v*v*(3-2*v);
+}
+
+function resolveProgress(elapsed,start,duration){
+  return easeResolve((elapsed-start)/duration);
+}
+
+function mixColor(a,b,t){
+  return [
+    Math.round(a[0]+(b[0]-a[0])*t),
+    Math.round(a[1]+(b[1]-a[1])*t),
+    Math.round(a[2]+(b[2]-a[2])*t)
+  ];
+}
+
+function rgbaColor(c,a=1){
+  return `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+}
+
+function setSoftEntrance(el,p,offset=18,blur=8){
+  if(!el)return;
+  const v=Math.max(0,Math.min(1,p));
+  el.style.opacity=String(v);
+  el.style.transform=`translateY(${(1-v)*offset}px) scale(${0.985+v*.015})`;
+  el.style.filter=`blur(${(1-v)*blur}px)`;
+}
+
+function resetResolvedTransitionVisuals(){
+  const atmosphere=$("resolutionAtmosphere");
+  if(atmosphere){
+    atmosphere.style.opacity="0";
+    atmosphere.style.background="";
+  }
+
+  const elements=[
+    $("eyebrow"),
+    $("title"),
+    $("subtitle"),
+    document.querySelector(".status"),
+    $("resolvedCard")
+  ];
+
+  elements.forEach(el=>{
+    if(!el)return;
+    el.style.opacity="";
+    el.style.transform="";
+    el.style.filter="";
+  });
+
+  const lights=$("festiveLightSpace");
+  const snow=$("snowField");
+  if(lights)lights.style.opacity="";
+  if(snow)snow.style.opacity="";
+}
+
+function applyResolvedTransition(){
+  const changedAt=Number(game.stateChangedAt||Date.now());
+  const elapsed=Math.max(0,Date.now()-changedAt);
+
+  setFestiveOverlay(true);
+
+  /* Background: crisis red → warm amber → teal/green → resolved blue-green. */
+  const atmosphere=$("resolutionAtmosphere");
+
+  if(atmosphere){
+    const red=[92,0,16];
+    const amber=[96,45,7];
+    const teal=[5,64,58];
+    const blue=[4,34,45];
+
+    let center;
+    let middle;
+
+    if(elapsed<2100){
+      const p=resolveProgress(elapsed,0,2100);
+      center=mixColor(red,amber,p);
+      middle=mixColor([34,2,9],[44,22,8],p);
+    }else if(elapsed<4100){
+      const p=resolveProgress(elapsed,2100,2000);
+      center=mixColor(amber,teal,p);
+      middle=mixColor([44,22,8],[4,37,32],p);
+    }else{
+      const p=resolveProgress(elapsed,4100,1700);
+      center=mixColor(teal,blue,p);
+      middle=mixColor([4,37,32],[2,17,21],p);
+    }
+
+    atmosphere.style.opacity=String(resolveProgress(elapsed,0,900));
+    atmosphere.style.background=
+      `radial-gradient(circle at center,
+        ${rgbaColor(center,.92)} 0%,
+        ${rgbaColor(middle,.84)} 46%,
+        rgba(1,3,8,.98) 100%)`;
+  }
+
+  /*
+    Text doesn't simply pop into place:
+    system confirmation → restored title → Christmas → status.
+  */
+  setSoftEntrance(
+    $("eyebrow"),
+    resolveProgress(elapsed,350,850),
+    10,
+    5
+  );
+
+  const title=$("title");
+  if(title){
+    const lines=title.querySelectorAll(".title-line");
+
+    if(lines[0]){
+      setSoftEntrance(
+        lines[0],
+        resolveProgress(elapsed,800,1200),
+        22,
+        9
+      );
+    }
+
+    if(lines[1]){
+      setSoftEntrance(
+        lines[1],
+        resolveProgress(elapsed,1550,1400),
+        26,
+        11
+      );
+    }
+
+    title.style.opacity="1";
+    title.style.transform="";
+    title.style.filter="";
+  }
+
+  setSoftEntrance(
+    $("subtitle"),
+    resolveProgress(elapsed,2150,1050),
+    15,
+    6
+  );
+
+  setSoftEntrance(
+    document.querySelector(".status"),
+    resolveProgress(elapsed,2550,1100),
+    12,
+    5
+  );
+
+  setSoftEntrance(
+    $("resolvedCard"),
+    resolveProgress(elapsed,3150,1200),
+    14,
+    6
+  );
+
+  /*
+    Lights and snow gradually arrive after the scientific system has stabilised.
+  */
+  const lightProgress=resolveProgress(
+    elapsed,
+    FESTIVE_LIGHTS_START_MS,
+    1800
+  );
+
+  const snowProgress=resolveProgress(
+    elapsed,
+    FESTIVE_SNOW_START_MS,
+    2000
+  );
+
+  const lights=$("festiveLightSpace");
+  const snow=$("snowField");
+
+  if(lights)lights.style.opacity=String(lightProgress);
+  if(snow)snow.style.opacity=String(snowProgress);
+}
+
 
 /* local / remote state */
 function localState(){
@@ -753,6 +986,7 @@ function addNote(html){const s=document.createElement("span");s.className="phase
 function baseDefault(){
   document.body.className="";
   setFestiveOverlay(false);
+  resetResolvedTransitionVisuals();
   show("defaultView",true);show("cascadeView",false);show("archiveAlert",false);show("phase2Log",false);show("resolvedCard",false);
   clearAction();
   text("eyebrow","INTERDIMENSIONAL EVENT ACTIVE");
@@ -1222,7 +1456,7 @@ function render(){
     text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
     text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
     show("resolvedCard",true);
-    setFestiveOverlay(true);
+    applyResolvedTransition();
     stopSiren();
     stopVoiceLoop();
   }
@@ -1896,39 +2130,129 @@ function clearFestiveNoteTimers(){
   festiveNoteTimers=[];
 }
 
-function playFestiveBell(freq,dur=.24,vol=.09){
+function playMagicBell(freq,dur=.24,vol=.075){
   if(!audioReady||muted)return;
 
-  playTone(freq,dur,vol,"triangle",freq*1.02);
+  const now=audioCtx.currentTime;
+  const bus=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter();
 
-  festiveNoteTimers.push(setTimeout(()=>{
-    playTone(freq*2,.11,vol*.42,"sine");
-  },22));
+  filter.type="highpass";
+  filter.frequency.value=240;
 
-  festiveNoteTimers.push(setTimeout(()=>{
-    playTone(freq*1.5,.14,vol*.18,"sine");
-  },65));
+  bus.gain.setValueAtTime(.0001,now);
+  bus.gain.exponentialRampToValueAtTime(vol,now+.012);
+  bus.gain.exponentialRampToValueAtTime(.0001,now+dur);
+
+  bus.connect(filter);
+  filter.connect(masterGain);
+
+  const partials=[
+    {ratio:1,    gain:1.00, type:"triangle"},
+    {ratio:2.01, gain:.34,  type:"sine"},
+    {ratio:3.02, gain:.13,  type:"sine"},
+    {ratio:4.12, gain:.055, type:"sine"}
+  ];
+
+  partials.forEach(p=>{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+
+    o.type=p.type;
+    o.frequency.value=freq*p.ratio;
+    g.gain.value=p.gain;
+
+    o.connect(g);
+    g.connect(bus);
+
+    o.start(now);
+    o.stop(now+dur+.04);
+  });
+
+  setTimeout(()=>{
+    try{bus.disconnect()}catch(e){}
+    try{filter.disconnect()}catch(e){}
+  },(dur+.18)*1000);
 }
 
-function playFestivePhrase(){
+function playMagicPad(freq,dur=1.45,vol=.018){
+  if(!audioReady||muted)return;
+
+  const now=audioCtx.currentTime;
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  const f=audioCtx.createBiquadFilter();
+
+  o.type="sine";
+  o.frequency.value=freq;
+
+  f.type="lowpass";
+  f.frequency.value=1100;
+
+  g.gain.setValueAtTime(.0001,now);
+  g.gain.exponentialRampToValueAtTime(vol,now+.25);
+  g.gain.setValueAtTime(vol,now+Math.max(.3,dur-.35));
+  g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+
+  o.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
+
+  o.start(now);
+  o.stop(now+dur+.05);
+}
+
+/*
+  JINGLE BELLS — public-domain melody.
+  Bell/celesta timbre + very soft pads to make it feel magical
+  rather than like a ringtone.
+*/
+function playJingleBellsPhrase(){
   if(!audioReady||muted)return;
 
   clearFestiveNoteTimers();
 
-  const seq=[
-    [0,523.25],[260,659.25],[520,783.99],[900,659.25],
-    [1220,698.46],[1480,783.99],[1760,880.00],[2140,783.99],
-    [2700,659.25],[2960,783.99],[3240,987.77],[3640,880.00],
-    [4200,783.99],[4520,698.46],[4840,659.25],[5360,523.25]
+  const E5=659.25;
+  const F5=698.46;
+  const G5=783.99;
+  const C5=523.25;
+  const D5=587.33;
+
+  const beat=255;
+
+  const notes=[
+    [0,E5,1],[1,E5,1],[2,E5,2],
+    [4,E5,1],[5,E5,1],[6,E5,2],
+    [8,E5,1],[9,G5,1],[10,C5,1.5],[11.5,D5,.5],[12,E5,3],
+
+    [16,F5,1],[17,F5,1],[18,F5,1],[19,F5,1],
+    [20,F5,1],[21,E5,1],[22,E5,1],[23,E5,.5],[23.5,E5,.5],
+    [24,E5,1],[25,D5,1],[26,D5,1],[27,E5,1],[28,D5,2],[30,G5,2]
   ];
 
-  seq.forEach(([delay,freq],idx)=>{
+  notes.forEach(([b,freq,len],idx)=>{
     festiveNoteTimers.push(setTimeout(()=>{
-      playFestiveBell(freq, idx%4===0 ? .30 : .22, idx%3===0 ? .10 : .08);
-      if(idx%4===1){
-        playFestiveBell(freq*0.75,.18,.045);
+      playMagicBell(freq,Math.max(.14,beat*len/1000*.88),idx%6===0?.09:.073);
+
+      if(idx%5===0){
+        playMagicBell(freq*2,.10,.025);
       }
-    },delay));
+    },b*beat));
+  });
+
+  /*
+    Soft "winter sky" harmony underneath.
+  */
+  const pads=[
+    [0,261.63],[4,261.63],[8,196.00],[12,261.63],
+    [16,174.61],[20,261.63],[24,196.00],[28,196.00]
+  ];
+
+  pads.forEach(([b,freq])=>{
+    festiveNoteTimers.push(setTimeout(()=>{
+      playMagicPad(freq,beat*3.7/1000,.016);
+      playMagicPad(freq*1.5,beat*3.7/1000,.010);
+    },b*beat));
   });
 }
 
@@ -1936,8 +2260,12 @@ function startFestiveMusic(){
   if(!audioReady||muted)return;
   if(festiveLoopHandle)return;
 
-  playFestivePhrase();
-  festiveLoopHandle=setInterval(playFestivePhrase,7000);
+  playJingleBellsPhrase();
+
+  /*
+    Phrase length ≈ 8.2 s; small breathing gap before looping.
+  */
+  festiveLoopHandle=setInterval(playJingleBellsPhrase,9000);
 }
 
 function stopFestiveMusic(){
@@ -2008,7 +2336,14 @@ function updateAudioState(s){
   else if(s==="RESOLVED"){
     stopHornPattern();
     stopVoiceLoop();
-    startFestiveMusic();
+
+    const elapsed=Date.now()-Number(game.stateChangedAt||Date.now());
+
+    if(elapsed>=FESTIVE_MUSIC_START_MS){
+      startFestiveMusic();
+    }else{
+      stopFestiveMusic();
+    }
   }
   else{
     stopFestiveMusic();
