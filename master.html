@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Master Control</title><link rel="stylesheet" href="css/style.css"></head>
+<body class="master"><div class="masterWrap">
+<small>KEEPER ACCESS</small><h1>MASTER CONTROL</h1>
+<div class="panel"><small>CURRENT STATE</small><h2 id="stateNow">WELCOME</h2></div>
+<div class="masterGrid">
+<button data-state="WELCOME">WELCOME</button>
+<button data-state="PHASE1">START PHASE I</button>
+<button data-state="PHASE1_COMPLETE">PHASE I COMPLETE</button>
+<button data-state="PHASE2">START PHASE II</button>
+<button data-state="CLEARED">COMPLETE PHASE II</button>
+<button data-state="PROVISIONAL">PROVISIONAL ANCHOR</button>
+<button data-state="CASCADE" class="danger">ACTIVATE CASCADE</button>
+<button data-state="RESOLVED" class="success">RESOLVE</button>
+</div>
+<div class="panel">
+<label>PHASE I CODE</label><input id="p1">
+<label>PHASE II CODE</label><input id="p2">
+<label>FINAL OVERRIDE COMMAND</label><input id="final">
+<label>CASCADE MINUTES</label><input id="minutes" type="number" min="1" max="60">
+<button id="save" class="wide">SAVE SETTINGS</button><p id="saved"></p>
+</div>
+<div class="panel"><button id="reset" class="wide danger">RESET LOCAL GAME STATE</button></div>
+<p><a href="index.html">Open Control Station</a></p>
+</div><script src="js/config.js"></script><script src="js/master.js"></script></body></html>

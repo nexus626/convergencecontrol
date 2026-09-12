@@ -1,0 +1,1 @@
+window.CONVERGENCE_CONFIG={defaultState:"WELCOME",phase1Code:"AR-4721",phase2Code:"NOVA-2974",finalCommand:"STABILIZE ALL TIMELINES",cascadeMinutes:10};
