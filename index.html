@@ -625,26 +625,59 @@ function startSiren(mode,durationMs=0){
   if(durationMs>0)sirenStopTimeout=setTimeout(()=>setSiren(0),durationMs);
 }
 function stopSiren(){clearTimeout(sirenStopTimeout); if(audioReady) setSiren(0);}
-function getEnglishVoice(){
+function getApprovedEnglishVoice(){
   if(!("speechSynthesis" in window)) return null;
 
   const voices = window.speechSynthesis.getVoices();
 
-  return (
-    voices.find(v => /^en-US$/i.test(v.lang || "")) ||
-    voices.find(v => /^en-GB$/i.test(v.lang || "")) ||
-    voices.find(v => /^en-/i.test(v.lang || "")) ||
-    null
-  );
+  // Only use known natural/system voices.
+  // If none are available, stay silent rather than risk spelling characters.
+  const preferredNames = [
+    "Google US English",
+    "Google UK English Female",
+    "Google UK English Male",
+    "Microsoft Aria Online (Natural) - English (United States)",
+    "Microsoft Jenny Online (Natural) - English (United States)",
+    "Microsoft Guy Online (Natural) - English (United States)",
+    "Microsoft Ava Online (Natural) - English (United States)",
+    "Microsoft Sonia Online (Natural) - English (United Kingdom)",
+    "Samantha",
+    "Daniel",
+    "Alex",
+    "Moira",
+    "Karen"
+  ];
+
+  for(const name of preferredNames){
+    const exact = voices.find(v => (v.name || "") === name);
+    if(exact) return exact;
+  }
+
+  // Conservative fallback: still require a clearly natural Microsoft/Google voice.
+  const naturalFallback = voices.find(v => {
+    const n = (v.name || "").toLowerCase();
+    const lang = (v.lang || "").toLowerCase();
+    const english = lang.startsWith("en-");
+    const naturalName =
+      n.includes("natural") ||
+      n.includes("google us english") ||
+      n.includes("google uk english");
+    const suspicious =
+      n.includes("compact") ||
+      n.includes("espeak") ||
+      n.includes("spell") ||
+      n.includes("screen reader");
+
+    return english && naturalName && !suspicious;
+  });
+
+  return naturalFallback || null;
 }
 
 function speakWarning(){
   if(muted || !("speechSynthesis" in window)) return;
 
-  const v = getEnglishVoice();
-
-  // If there is no real English voice installed, do not speak at all.
-  // This avoids Italian TTS reading English phonetically.
+  const v = getApprovedEnglishVoice();
   if(!v) return;
 
   window.speechSynthesis.cancel();
@@ -655,8 +688,8 @@ function speakWarning(){
 
   u.voice = v;
   u.lang = v.lang || "en-US";
-  u.rate = 0.84;
-  u.pitch = 0.64;
+  u.rate = 0.82;
+  u.pitch = 0.72;
   u.volume = 1;
 
   window.speechSynthesis.speak(u);
