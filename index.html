@@ -120,6 +120,34 @@ body.resolved{background:radial-gradient(circle at center,#04251d 0,#020b0a 45%,
 
 
 
+
+/* Cascade readability panel */
+.crisis-readout{
+  position:relative;
+  z-index:3;
+  width:min(360px,88vw);
+  padding:18px 22px 16px;
+  background:rgba(0,0,0,.80);
+  border:1px solid rgba(255,90,108,.34);
+  box-shadow:
+    0 0 26px rgba(255,35,66,.10),
+    inset 0 0 28px rgba(255,255,255,.015);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+
+.crisis-readout .countdown-label{
+  margin-bottom:5px;
+}
+
+.crisis-readout .countdown{
+  margin:0 0 8px;
+}
+
+.crisis-readout .cascade-status{
+  margin-top:4px;
+}
+
 /* =========================================================
    PHASE ENTRY WARNING + LIVE INSTABILITY
    ========================================================= */
@@ -344,9 +372,6 @@ body.phase2.phase2-live #normalCosmos .r3{
       <div id="cascadeLogLeft" class="cascade-log"></div>
 
       <div class="crisis-center">
-        <div class="countdown-label">IRREVERSIBLE CASCADE WINDOW</div>
-        <div id="timer" class="countdown">10:00</div>
-
         <div class="crisis-cosmos" id="crisisCosmos">
           <i id="cr1" class="crisis-ring cr1"></i>
           <i id="cr2" class="crisis-ring cr2"></i>
@@ -354,7 +379,11 @@ body.phase2.phase2-live #normalCosmos .r3{
           <i id="crisisCore" class="crisis-core"></i>
         </div>
 
-        <div class="cascade-status">TIMELINE INTEGRITY: <b>UNSTABLE</b></div>
+        <div class="crisis-readout">
+          <div class="countdown-label">IRREVERSIBLE CASCADE WINDOW</div>
+          <div id="timer" class="countdown">10:00</div>
+          <div class="cascade-status">TIMELINE INTEGRITY: <b>UNSTABLE</b></div>
+        </div>
       </div>
 
       <div id="cascadeLogRight" class="cascade-log right"></div>
@@ -515,14 +544,14 @@ function showPhaseWarningFor(state){
   }
 
   if(state==="PHASE2"){
-    text("phaseWarningLabel","WARNING / PHASE II");
+    text("phaseWarningLabel","SYSTEM WARNING");
     text("phaseWarningTitle","TIMELINE CONFLICT");
     text(
       "phaseWarningSubtitle",
       "MULTIPLE REFERENCE FRAMES DETECTED · CONTAINMENT RESPONSE ACTIVE"
     );
   }else{
-    text("phaseWarningLabel","CRITICAL WARNING / PHASE III");
+    text("phaseWarningLabel","CRITICAL SYSTEM WARNING");
     text("phaseWarningTitle","PRIMARY ANCHOR INSTABILITY");
     text(
       "phaseWarningSubtitle",
