@@ -113,3 +113,13 @@ QR partecipanti:
 
 ## v6.1
 - Finale: `CONVERGENCE RESTORED` e `MERRY CHRISTMAS` sono ora visualizzati entrambi come titolo principale, con la stessa dimensione.
+
+## v7
+- Radio warning voice uses only an English `speechSynthesis` voice (`en-US`/`en-GB`/`en-*`). If the browser has no English voice, voice warning is skipped.
+- Industrial alarm redesigned with much lower horn-like frequencies and harmonics.
+- Resolution is now a 5.6 s transition: red → orange → yellow/white → green/cyan → blue.
+- Final Christmas mode includes:
+  - falling snow;
+  - blinking colored bulbs around the screen perimeter;
+  - a public-domain Jingle Bells instrumental motif generated with Web Audio;
+  - final blue/green stabilized Convergence visuals.
