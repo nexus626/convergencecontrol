@@ -119,6 +119,177 @@ body.resolved{background:radial-gradient(circle at center,#04251d 0,#020b0a 45%,
 @keyframes sideFade{0%{opacity:0;transform:translateY(12px)}12%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translateY(-32px)}}
 
 
+
+/* =========================================================
+   PHASE ENTRY WARNING + LIVE INSTABILITY
+   ========================================================= */
+
+.phase-warning{
+  position:fixed;
+  z-index:80;
+  inset:0;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at center,
+      rgba(74,0,10,.34) 0%,
+      rgba(24,0,6,.70) 48%,
+      rgba(1,2,7,.88) 100%);
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .20s ease,visibility .20s ease;
+}
+
+.phase-warning.active{
+  opacity:1;
+  visibility:visible;
+}
+
+.phase-warning-box{
+  width:min(900px,84vw);
+  border:2px solid rgba(255,70,92,.84);
+  background:rgba(18,1,7,.76);
+  box-shadow:
+    0 0 28px rgba(255,30,62,.28),
+    inset 0 0 42px rgba(255,40,63,.08);
+  padding:clamp(26px,4vw,54px);
+  text-align:center;
+  animation:warningPanelPulse .92s ease-in-out infinite;
+}
+
+.phase-warning-symbol{
+  color:#ff536d;
+  font-size:clamp(44px,6vw,92px);
+  line-height:1;
+  text-shadow:0 0 28px rgba(255,41,74,.82);
+  animation:warningSymbolPulse .92s ease-in-out infinite;
+}
+
+.phase-warning-label{
+  margin-top:10px;
+  color:#ff90a0;
+  font-size:clamp(15px,1.5vw,23px);
+  letter-spacing:.32em;
+}
+
+.phase-warning-title{
+  margin:12px 0 8px;
+  color:#fff1f3;
+  font-size:clamp(32px,4.2vw,72px);
+  line-height:1.04;
+  letter-spacing:.13em;
+  font-weight:400;
+  text-shadow:
+    0 0 18px rgba(255,67,92,.66),
+    0 0 46px rgba(255,34,68,.24);
+}
+
+.phase-warning-subtitle{
+  color:#ffb8c2;
+  font-size:clamp(12px,1.05vw,17px);
+  letter-spacing:.16em;
+  line-height:1.55;
+}
+
+.phase-warning-bar{
+  width:72%;
+  height:3px;
+  margin:24px auto 0;
+  background:rgba(255,74,98,.15);
+  overflow:hidden;
+}
+
+.phase-warning-bar::before{
+  content:"";
+  display:block;
+  height:100%;
+  width:34%;
+  background:#ff4e68;
+  box-shadow:0 0 18px #ff3959;
+  animation:warningSweep 1.15s linear infinite;
+}
+
+@keyframes warningPanelPulse{
+  0%,100%{
+    border-color:rgba(255,70,92,.50);
+    box-shadow:
+      0 0 22px rgba(255,30,62,.16),
+      inset 0 0 34px rgba(255,40,63,.05);
+  }
+  50%{
+    border-color:rgba(255,105,120,1);
+    box-shadow:
+      0 0 54px rgba(255,30,62,.40),
+      inset 0 0 60px rgba(255,40,63,.13);
+  }
+}
+
+@keyframes warningSymbolPulse{
+  0%,100%{opacity:.46;transform:scale(.96)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+
+@keyframes warningSweep{
+  from{transform:translateX(-120%)}
+  to{transform:translateX(390%)}
+}
+
+/* Phase II after the warning curtain disappears */
+body.phase2.phase2-live #normalCore{
+  animation:phase2CoreFailure .92s ease-in-out infinite;
+}
+
+body.phase2.phase2-live #normalCosmos{
+  animation:phase2CosmosJolt 2.2s ease-in-out infinite;
+}
+
+body.phase2.phase2-live #normalCosmos .r1{
+  box-shadow:0 0 28px rgba(255,56,82,.16);
+}
+body.phase2.phase2-live #normalCosmos .r2{
+  box-shadow:0 0 24px rgba(255,110,73,.13);
+}
+body.phase2.phase2-live #normalCosmos .r3{
+  box-shadow:0 0 21px rgba(255,55,89,.16);
+}
+
+@keyframes phase2CoreFailure{
+  0%,100%{
+    transform:scale(.98);
+    filter:drop-shadow(0 0 28px #ff3657) saturate(1.25) brightness(.96);
+  }
+  22%{
+    transform:scale(1.17);
+    filter:drop-shadow(0 0 45px #ff234a) saturate(1.62) brightness(1.10);
+  }
+  43%{
+    transform:scale(1.05);
+    filter:drop-shadow(0 0 34px #ff5d3e) saturate(1.38) brightness(1.02);
+  }
+  66%{
+    transform:scale(1.31);
+    filter:drop-shadow(0 0 59px #ff173f) saturate(1.86) brightness(1.22);
+  }
+  82%{
+    transform:scale(1.10);
+    filter:drop-shadow(0 0 39px #ff563e) saturate(1.48) brightness(1.05);
+  }
+}
+
+@keyframes phase2CosmosJolt{
+  0%,100%{filter:brightness(1)}
+  48%{filter:brightness(1.08)}
+  52%{filter:brightness(1.22)}
+  58%{filter:brightness(1.03)}
+}
+
+/* Make the crisis NOVA feel substantially larger */
+.crisis-cosmos{
+  width:400px;
+  height:400px;
+}
+
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -213,6 +384,17 @@ body.resolved{background:radial-gradient(circle at center,#04251d 0,#020b0a 45%,
 <footer><span>CONVERGENCE CONTROL SYSTEM / BUILD 26.12</span><span id="online">● CONTROL STATION ONLINE</span></footer>
 </div>
 
+
+<div id="phaseWarning" class="phase-warning">
+  <div class="phase-warning-box">
+    <div class="phase-warning-symbol">⚠</div>
+    <div id="phaseWarningLabel" class="phase-warning-label">SYSTEM WARNING</div>
+    <div id="phaseWarningTitle" class="phase-warning-title">TIMELINE CONFLICT</div>
+    <div id="phaseWarningSubtitle" class="phase-warning-subtitle">CONTAINMENT RESPONSE ACTIVE</div>
+    <div class="phase-warning-bar"></div>
+  </div>
+</div>
+
 <div id="audioGate" class="audio-gate">
   <span id="audioState">AUDIO OFFLINE</span>
   <button id="audioBtn">INITIALIZE CONTROL AUDIO</button>
@@ -242,6 +424,10 @@ let game={state:"WELCOME",timerMinutes:10,cascadeStart:0,stateChangedAt:0,select
 let lastState="";
 let modalMode="";
 let timerHandle=null,phase2LogHandle=null,cascadeLogHandle=null;
+let phase2InstabilityHandle=null;
+let phaseWarningTimer=null;
+let phaseWarningUntil=0;
+const PHASE_WARNING_MS=7000;
 let bolts=[];
 
 /* local / remote state */
@@ -307,6 +493,102 @@ function baseDefault(){
   text("frame","LOCKED");text("anchor","STANDBY");text("field","ACTIVE");
 }
 
+
+
+
+/* Phase entry warning curtain */
+function hidePhaseWarning(){
+  if(phaseWarningTimer){
+    clearTimeout(phaseWarningTimer);
+    phaseWarningTimer=null;
+  }
+  phaseWarningUntil=0;
+  show("phaseWarning",false);
+}
+
+function showPhaseWarningFor(state){
+  if(state!=="PHASE2" && state!=="CASCADE")return;
+
+  if(phaseWarningTimer){
+    clearTimeout(phaseWarningTimer);
+    phaseWarningTimer=null;
+  }
+
+  if(state==="PHASE2"){
+    text("phaseWarningLabel","WARNING / PHASE II");
+    text("phaseWarningTitle","TIMELINE CONFLICT");
+    text(
+      "phaseWarningSubtitle",
+      "MULTIPLE REFERENCE FRAMES DETECTED · CONTAINMENT RESPONSE ACTIVE"
+    );
+  }else{
+    text("phaseWarningLabel","CRITICAL WARNING / PHASE III");
+    text("phaseWarningTitle","PRIMARY ANCHOR INSTABILITY");
+    text(
+      "phaseWarningSubtitle",
+      "CASCADE FAILURE DETECTED · EMERGENCY CONTAINMENT ACTIVE"
+    );
+  }
+
+  phaseWarningUntil=Date.now()+PHASE_WARNING_MS;
+  $("phaseWarning").classList.remove("hidden");
+  $("phaseWarning").classList.add("active");
+
+  phaseWarningTimer=setTimeout(()=>{
+    $("phaseWarning").classList.remove("active");
+    phaseWarningTimer=null;
+
+    if(game.state==="PHASE2"){
+      startPhase2Instability();
+    }
+  },PHASE_WARNING_MS);
+}
+
+function stopPhase2Instability(){
+  if(phase2InstabilityHandle){
+    clearInterval(phase2InstabilityHandle);
+    phase2InstabilityHandle=null;
+  }
+}
+
+function startPhase2Instability(){
+  if(game.state!=="PHASE2")return;
+  if(phase2InstabilityHandle)return;
+
+  /*
+    Persistent containment failure:
+    rapid plasma rays + electronic crackles after the warning panel.
+  */
+  phase2InstabilityHandle=setInterval(()=>{
+    if(game.state!=="PHASE2"){
+      stopPhase2Instability();
+      return;
+    }
+
+    if(Date.now()<phaseWarningUntil)return;
+
+    const rays=3+Math.floor(Math.random()*7);
+    burstFrom("normalCore",rays);
+
+    if(Math.random()<.78){
+      audioEvent("plasma");
+    }
+  },430);
+}
+
+function updatePhaseLiveState(s){
+  if(s==="PHASE2"){
+    const elapsed=Date.now()-Number(game.stateChangedAt||Date.now());
+
+    if(elapsed>=PHASE_WARNING_MS){
+      document.body.classList.add("phase2-live");
+      startPhase2Instability();
+    }
+  }else{
+    document.body.classList.remove("phase2-live");
+    stopPhase2Instability();
+  }
+}
 
 
 /* Smooth NOVA state transitions */
@@ -505,10 +787,14 @@ function animateCascadeEntry(){
   if(novaTransitionRAF)cancelAnimationFrame(novaTransitionRAF);
 
   const duration=3600;
-  const start=performance.now();
-  cascadeEntryUntil=Date.now()+duration;
+  const start=performance.now()+PHASE_WARNING_MS;
+  cascadeEntryUntil=Date.now()+PHASE_WARNING_MS+duration;
 
   function frame(now){
+    if(now<start){
+      novaTransitionRAF=requestAnimationFrame(frame);
+      return;
+    }
     const raw=clamp01((now-start)/duration);
     const overall=smooth01(raw);
 
@@ -524,7 +810,7 @@ function animateCascadeEntry(){
     /*
       The NOVA visibly expands as the Cascade begins.
     */
-    const scale=mixNum(.95,1.72,overall);
+    const scale=mixNum(.95,2.10,overall);
 
     applyCrisisNovaPalette(p,scale);
 
@@ -547,12 +833,16 @@ function triggerNovaTransition(previousState,currentState){
     cool stable NOVA heats into conflict.
   */
   if(currentState==="PHASE2"){
-    animateNormalNova(
-      ["blue","cyan","yellow","orange","red"],
-      3300,
-      1,
-      1.10
-    );
+    setTimeout(()=>{
+      if(game.state!=="PHASE2")return;
+
+      animateNormalNova(
+        ["blue","cyan","yellow","orange","red"],
+        3300,
+        1,
+        1.18
+      );
+    },PHASE_WARNING_MS);
     return;
   }
 
@@ -668,9 +958,16 @@ function render(){
   }
 
   if(lastState!==s){
+    if(s==="PHASE2" || s==="CASCADE"){
+      showPhaseWarningFor(s);
+    }else{
+      hidePhaseWarning();
+    }
+
     triggerNovaTransition(lastState,s);
   }
 
+  updatePhaseLiveState(s);
   updateAudioState(s);
   lastState=s;
 }
@@ -801,7 +1098,13 @@ function startTimer(){
     const total=Number(game.timerMinutes||10)*60000;
     let start=Number(game.cascadeStart||0);
     if(!start&&!remote()){start=Date.now();localStorage.setItem("cascadeStart",String(start));game.cascadeStart=start}
-    const left=Math.max(0,total-(Date.now()-start));
+
+    /*
+      The warning prelude is outside the countdown.
+      The visible timer begins only when the warning panel disappears.
+    */
+    const effectiveStart=start+PHASE_WARNING_MS;
+    const left=Math.max(0,total-(Date.now()-effectiveStart));
     const fraction=total?left/total:0;
     const sec=Math.ceil(left/1000);
     text("timer",`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`);
@@ -810,9 +1113,9 @@ function startTimer(){
 
     if(Date.now()>=cascadeEntryUntil){
       const pulse=Math.sin(Date.now()/230)*.08;
-      const scale=1.15+danger*2.1+pulse;
+      const scale=2.02+danger*2.75+pulse;
       $("crisisCore").style.transform=`scale(${scale})`;
-      $("crisisCore").style.filter=`drop-shadow(0 0 ${35+danger*80}px rgba(255,${Math.round(75-danger*50)},25,.98)) saturate(${1+danger*1.8})`;
+      $("crisisCore").style.filter=`drop-shadow(0 0 ${55+danger*115}px rgba(255,${Math.round(75-danger*50)},25,.98)) saturate(${1.35+danger*2.15})`;
       $("cr1").style.transform=`scale(${1.02 + Math.sin(Date.now()/420)*(.045+danger*.08) - danger*.06})`;
       $("cr2").style.transform=`scale(${1.0 + Math.sin(Date.now()/330+1)*(.07+danger*.1) - danger*.1})`;
       $("cr3").style.transform=`scale(${0.98 + Math.sin(Date.now()/260+2)*(.09+danger*.12) - danger*.14})`;
