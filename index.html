@@ -517,11 +517,105 @@ body.resolved #resolvedCard{
   will-change:opacity,transform,filter;
 }
 
+
+/* =========================================================
+   INSTABILITY GLITCH + SMOOTH PHASE RESOLUTION
+   ========================================================= */
+.glitch-layer{
+  position:fixed;
+  inset:0;
+  z-index:9;
+  pointer-events:none;
+  opacity:0;
+  mix-blend-mode:screen;
+}
+
+.glitch-layer.hit{
+  animation:screenGlitchHit .26s steps(2,end) 1;
+}
+
+.glitch-layer::before,
+.glitch-layer::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:0;
+}
+
+.glitch-layer.hit::before{
+  opacity:.30;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(110,220,255,.20) 0 1px,
+      transparent 1px 4px
+    );
+  clip-path:polygon(0 18%,100% 18%,100% 25%,0 25%);
+  animation:glitchSliceA .26s steps(2,end) 1;
+}
+
+.glitch-layer.hit::after{
+  opacity:.22;
+  background:rgba(255,45,84,.20);
+  clip-path:polygon(0 62%,100% 62%,100% 69%,0 69%);
+  animation:glitchSliceB .26s steps(2,end) 1;
+}
+
+@keyframes screenGlitchHit{
+  0%{opacity:0;transform:translateX(0)}
+  18%{opacity:.55;transform:translateX(-3px)}
+  45%{opacity:.34;transform:translateX(3px)}
+  72%{opacity:.20;transform:translateX(-1px)}
+  100%{opacity:0;transform:translateX(0)}
+}
+@keyframes glitchSliceA{
+  0%{transform:translateX(-8px)}
+  50%{transform:translateX(10px)}
+  100%{transform:translateX(0)}
+}
+@keyframes glitchSliceB{
+  0%{transform:translateX(9px)}
+  55%{transform:translateX(-10px)}
+  100%{transform:translateX(0)}
+}
+
+/* Short smooth "system settles" animation for solved phases */
+body.settling #normalCosmos{
+  animation:settleCosmos 1.8s ease-out 1;
+}
+body.settling #normalCore{
+  animation:settleCore 1.8s ease-out 1;
+}
+body.settling #eyebrow,
+body.settling #title,
+body.settling #subtitle,
+body.settling .status,
+body.settling #actionArea{
+  animation:settleText 1.35s ease-out 1;
+}
+
+@keyframes settleCosmos{
+  0%{filter:brightness(1.28) saturate(1.45);transform:scale(1.08)}
+  45%{filter:brightness(1.08) saturate(1.15);transform:scale(1.02)}
+  100%{filter:brightness(1) saturate(1);transform:scale(1)}
+}
+@keyframes settleCore{
+  0%{filter:drop-shadow(0 0 48px rgba(125,235,255,.95));transform:scale(1.22)}
+  55%{filter:drop-shadow(0 0 30px rgba(110,220,255,.65));transform:scale(1.06)}
+  100%{filter:drop-shadow(0 0 22px #64bfff);transform:scale(1)}
+}
+@keyframes settleText{
+  0%{opacity:.12;transform:translateY(15px);filter:blur(6px)}
+  50%{opacity:.78;transform:translateY(4px);filter:blur(1.5px)}
+  100%{opacity:1;transform:translateY(0);filter:blur(0)}
+}
+
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <canvas id="plasma"></canvas>
+<div id="glitchLayer" class="glitch-layer"></div>
 <div id="resolutionAtmosphere" class="resolution-atmosphere"></div>
 
 <div class="screen">
@@ -660,6 +754,9 @@ let lastState="";
 let modalMode="";
 let timerHandle=null,phase2LogHandle=null,cascadeLogHandle=null;
 let phase2InstabilityHandle=null;
+let cascadeInstabilityHandle=null;
+let glitchCooldown=false;
+let settleTimer=null;
 let phaseWarningTimer=null;
 let phaseWarningUntil=0;
 const PHASE_WARNING_MS=7000;
@@ -999,6 +1096,84 @@ function baseDefault(){
 
 
 
+
+function triggerVideoGlitch(strength="normal"){
+  if(glitchCooldown)return;
+  glitchCooldown=true;
+
+  const layer=$("glitchLayer");
+  if(!layer)return;
+
+  layer.classList.remove("hit");
+  void layer.offsetWidth;
+
+  if(strength==="strong"){
+    layer.style.filter="brightness(1.25) contrast(1.18)";
+  }else{
+    layer.style.filter="";
+  }
+
+  layer.classList.add("hit");
+
+  setTimeout(()=>{
+    layer.classList.remove("hit");
+    layer.style.filter="";
+    glitchCooldown=false;
+  },290);
+}
+
+function triggerSettlingTransition(){
+  if(settleTimer){
+    clearTimeout(settleTimer);
+    settleTimer=null;
+  }
+
+  document.body.classList.remove("settling");
+  void document.body.offsetWidth;
+  document.body.classList.add("settling");
+
+  settleTimer=setTimeout(()=>{
+    document.body.classList.remove("settling");
+    settleTimer=null;
+  },1850);
+}
+
+function stopCascadeInstability(){
+  if(cascadeInstabilityHandle){
+    clearInterval(cascadeInstabilityHandle);
+    cascadeInstabilityHandle=null;
+  }
+}
+
+function startCascadeInstability(){
+  if(game.state!=="CASCADE")return;
+  if(cascadeInstabilityHandle)return;
+
+  /*
+    Phase III is deliberately more violent than Phase II:
+    more plasma rays, more frequent glitches.
+  */
+  cascadeInstabilityHandle=setInterval(()=>{
+    if(game.state!=="CASCADE"){
+      stopCascadeInstability();
+      return;
+    }
+
+    if(Date.now()<phaseWarningUntil)return;
+
+    burstFrom("crisisCore",7+Math.floor(Math.random()*11));
+
+    if(Math.random()<.92){
+      audioEvent("plasma");
+    }
+
+    if(Math.random()<.58){
+      triggerVideoGlitch("strong");
+    }
+  },310);
+}
+
+
 /* Phase entry warning curtain */
 function hidePhaseWarning(){
   if(phaseWarningTimer){
@@ -1070,13 +1245,17 @@ function startPhase2Instability(){
 
     if(Date.now()<phaseWarningUntil)return;
 
-    const rays=3+Math.floor(Math.random()*7);
+    const rays=2+Math.floor(Math.random()*5);
     burstFrom("normalCore",rays);
 
-    if(Math.random()<.78){
+    if(Math.random()<.64){
       audioEvent("plasma");
     }
-  },430);
+
+    if(Math.random()<.26){
+      triggerVideoGlitch("normal");
+    }
+  },520);
 }
 
 function updatePhaseLiveState(s){
@@ -1087,9 +1266,22 @@ function updatePhaseLiveState(s){
       document.body.classList.add("phase2-live");
       startPhase2Instability();
     }
-  }else{
+
+    stopCascadeInstability();
+  }
+  else if(s==="CASCADE"){
     document.body.classList.remove("phase2-live");
     stopPhase2Instability();
+
+    const elapsed=Date.now()-Number(game.stateChangedAt||Date.now());
+    if(elapsed>=PHASE_WARNING_MS){
+      startCascadeInstability();
+    }
+  }
+  else{
+    document.body.classList.remove("phase2-live");
+    stopPhase2Instability();
+    stopCascadeInstability();
   }
 }
 
@@ -1354,7 +1546,7 @@ function triggerNovaTransition(previousState,currentState){
   */
   if(
     previousState==="PHASE2" &&
-    (currentState==="CLEARED" || currentState==="AUTO_ANCHOR")
+    currentState==="CLEARED"
   ){
     animateNormalNova(
       ["red","orange","yellow","cyan","blue"],
@@ -1389,7 +1581,8 @@ function triggerNovaTransition(previousState,currentState){
 }
 
 function render(){
-  const s=game.state||"WELCOME";
+  const rawState=game.state||"WELCOME";
+  const s=rawState==="AUTO_ANCHOR" ? "PHASE1_COMPLETE" : rawState;
   baseDefault();
 
   if(s==="WELCOME"){
@@ -1417,20 +1610,6 @@ function render(){
     startPhase2Logs();
     if(lastState!==s){burstFrom("normalCore",24);audioEvent("phase2_entry")}
   } else stopPhase2Logs();
-
-  if(s==="AUTO_ANCHOR"){
-    text("eyebrow","AUTOMATIC STABILIZATION SEQUENCE");
-    text("title","AUTOMATIC REFERENCE ANCHOR PENDING...");
-    text("subtitle","SYSTEM ANALYSIS IN PROGRESS");
-    text("archive","VERIFIED");text("anchor","PENDING");text("frame","CALCULATING");
-    const elapsed=Date.now()-(game.stateChangedAt||Date.now());
-    if(elapsed>4500){
-      text("title","CONVERGENCE STABLE");
-      text("subtitle","AUTOMATIC REFERENCE ANCHOR ESTABLISHED");
-      text("frame","NOVA");text("anchor","ACTIVE");
-      addNote("CASE CLOSED · ALL REGISTERED VARIANTS CLEARED");
-    } else addNote("AUTOMATIC REFERENCE ANCHOR PENDING...");
-  }
 
   if(s==="CLEARED"){
     text("eyebrow","ANCHOR PROTOCOL ACCEPTED");
@@ -1466,6 +1645,17 @@ function render(){
       showPhaseWarningFor(s);
     }else{
       hidePhaseWarning();
+    }
+
+    /*
+      Smooth "problem solved" transitions for Archive restoration
+      and Phase II resolution, analogous to the final stabilisation.
+    */
+    if(
+      s==="PHASE1_COMPLETE" ||
+      (lastState==="PHASE2" && s==="CLEARED")
+    ){
+      triggerSettlingTransition();
     }
 
     triggerNovaTransition(lastState,s);
@@ -1625,7 +1815,10 @@ function startTimer(){
       $("cr3").style.transform=`scale(${0.98 + Math.sin(Date.now()/260+2)*(.09+danger*.12) - danger*.14})`;
     }
 
-    if(Math.random()<(0.03+danger*.11))burstFrom("crisisCore",2+Math.floor(danger*6));
+    if(Math.random()<(0.07+danger*.18)){
+      burstFrom("crisisCore",5+Math.floor(danger*10));
+      if(Math.random()<.32)triggerVideoGlitch("strong");
+    }
   };
   tick();timerHandle=setInterval(tick,120);
 }
@@ -1820,11 +2013,11 @@ function deepHornBlast(duration=2.0){
   const compressor=audioCtx.createDynamicsCompressor();
 
   bodyFilter.type="bandpass";
-  bodyFilter.frequency.setValueAtTime(430,now);
+  bodyFilter.frequency.setValueAtTime(560,now);
   bodyFilter.Q.value=.55;
 
   presence.type="peaking";
-  presence.frequency.setValueAtTime(520,now);
+  presence.frequency.setValueAtTime(690,now);
   presence.Q.value=.75;
   presence.gain.value=4.8;
 
@@ -1852,9 +2045,9 @@ function deepHornBlast(duration=2.0){
   const rotorDepth=audioCtx.createGain();
 
   rotor.type="sine";
-  rotor.frequency.setValueAtTime(6.8,now);
-  rotor.frequency.linearRampToValueAtTime(7.8,now+duration*.5);
-  rotor.frequency.linearRampToValueAtTime(6.6,now+duration);
+  rotor.frequency.setValueAtTime(7.8,now);
+  rotor.frequency.linearRampToValueAtTime(9.1,now+duration*.5);
+  rotor.frequency.linearRampToValueAtTime(7.5,now+duration);
 
   rotorDepth.gain.setValueAtTime(.20,now);
 
@@ -1866,11 +2059,11 @@ function deepHornBlast(duration=2.0){
     Small detuning makes the siren sound acoustic/mechanical instead of synthetic.
   */
   const partials=[
-    {freq:180, type:"sawtooth", gain:.18, detune:-5},
-    {freq:240, type:"sawtooth", gain:.27, detune: 3},
-    {freq:360, type:"triangle", gain:.32, detune:-2},
-    {freq:480, type:"triangle", gain:.25, detune: 2},
-    {freq:720, type:"sine",     gain:.10, detune:-3}
+    {freq:230, type:"sawtooth", gain:.17, detune:-5},
+    {freq:310, type:"sawtooth", gain:.26, detune: 3},
+    {freq:465, type:"triangle", gain:.32, detune:-2},
+    {freq:620, type:"triangle", gain:.25, detune: 2},
+    {freq:930, type:"sine",     gain:.10, detune:-3}
   ];
 
   partials.forEach((p,idx)=>{
@@ -1924,7 +2117,7 @@ function deepHornBlast(duration=2.0){
   noiseSrc.buffer=noiseBuffer;
 
   noiseFilter.type="bandpass";
-  noiseFilter.frequency.setValueAtTime(560,now);
+  noiseFilter.frequency.setValueAtTime(720,now);
   noiseFilter.Q.value=.8;
 
   noiseGain.gain.setValueAtTime(.0001,now);
@@ -2130,82 +2323,150 @@ function clearFestiveNoteTimers(){
   festiveNoteTimers=[];
 }
 
-function playMagicBell(freq,dur=.24,vol=.075){
+function playMagicBell(freq,dur=.30,vol=.07){
   if(!audioReady||muted)return;
 
   const now=audioCtx.currentTime;
-  const bus=audioCtx.createGain();
-  const filter=audioCtx.createBiquadFilter();
 
-  filter.type="highpass";
-  filter.frequency.value=240;
+  /*
+    Celesta / glass-bell body with two soft echo taps.
+    This keeps Jingle Bells recognizable but makes it feel airy and magical.
+  */
+  const dry=audioCtx.createGain();
+  const toneFilter=audioCtx.createBiquadFilter();
+  const sparkleFilter=audioCtx.createBiquadFilter();
 
-  bus.gain.setValueAtTime(.0001,now);
-  bus.gain.exponentialRampToValueAtTime(vol,now+.012);
-  bus.gain.exponentialRampToValueAtTime(.0001,now+dur);
+  toneFilter.type="highpass";
+  toneFilter.frequency.value=330;
 
-  bus.connect(filter);
-  filter.connect(masterGain);
+  sparkleFilter.type="peaking";
+  sparkleFilter.frequency.value=2500;
+  sparkleFilter.Q.value=.75;
+  sparkleFilter.gain.value=5.5;
+
+  dry.gain.setValueAtTime(.0001,now);
+  dry.gain.exponentialRampToValueAtTime(vol,now+.012);
+  dry.gain.exponentialRampToValueAtTime(.0001,now+dur);
+
+  dry.connect(toneFilter);
+  toneFilter.connect(sparkleFilter);
+  sparkleFilter.connect(masterGain);
 
   const partials=[
-    {ratio:1,    gain:1.00, type:"triangle"},
-    {ratio:2.01, gain:.34,  type:"sine"},
-    {ratio:3.02, gain:.13,  type:"sine"},
-    {ratio:4.12, gain:.055, type:"sine"}
+    {ratio:1.00, gain:1.00, type:"triangle"},
+    {ratio:2.00, gain:.30, type:"sine"},
+    {ratio:2.99, gain:.13, type:"sine"},
+    {ratio:4.08, gain:.065,type:"sine"},
+    {ratio:6.12, gain:.022,type:"sine"}
   ];
 
-  partials.forEach(p=>{
+  partials.forEach((p,idx)=>{
     const o=audioCtx.createOscillator();
     const g=audioCtx.createGain();
 
     o.type=p.type;
-    o.frequency.value=freq*p.ratio;
+    o.frequency.setValueAtTime(freq*p.ratio,now);
+    o.detune.setValueAtTime((idx-2)*1.4,now);
     g.gain.value=p.gain;
 
     o.connect(g);
-    g.connect(bus);
+    g.connect(dry);
 
     o.start(now);
-    o.stop(now+dur+.04);
+    o.stop(now+dur+.08);
+  });
+
+  /* shimmering octave */
+  const shimmer=audioCtx.createOscillator();
+  const shimmerGain=audioCtx.createGain();
+  shimmer.type="sine";
+  shimmer.frequency.value=freq*2;
+  shimmerGain.gain.setValueAtTime(.0001,now);
+  shimmerGain.gain.exponentialRampToValueAtTime(vol*.16,now+.035);
+  shimmerGain.gain.exponentialRampToValueAtTime(.0001,now+dur*.78);
+  shimmer.connect(shimmerGain);
+  shimmerGain.connect(masterGain);
+  shimmer.start(now);
+  shimmer.stop(now+dur+.04);
+
+  /* two discrete soft echoes = pseudo-reverb without muddying the melody */
+  [0.18,0.36].forEach((delayTime,i)=>{
+    const delay=audioCtx.createDelay(.8);
+    const echoGain=audioCtx.createGain();
+    delay.delayTime.value=delayTime;
+    echoGain.gain.value=i===0 ? .19 : .095;
+
+    dry.connect(delay);
+    delay.connect(echoGain);
+    echoGain.connect(masterGain);
+
+    setTimeout(()=>{
+      try{delay.disconnect()}catch(e){}
+      try{echoGain.disconnect()}catch(e){}
+    },(dur+delayTime+.45)*1000);
   });
 
   setTimeout(()=>{
-    try{bus.disconnect()}catch(e){}
-    try{filter.disconnect()}catch(e){}
-  },(dur+.18)*1000);
+    try{dry.disconnect()}catch(e){}
+    try{toneFilter.disconnect()}catch(e){}
+    try{sparkleFilter.disconnect()}catch(e){}
+    try{shimmerGain.disconnect()}catch(e){}
+  },(dur+.55)*1000);
 }
 
-function playMagicPad(freq,dur=1.45,vol=.018){
+function playMagicPad(freq,dur=1.6,vol=.017){
   if(!audioReady||muted)return;
 
   const now=audioCtx.currentTime;
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  const f=audioCtx.createBiquadFilter();
+  const padBus=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter();
 
-  o.type="sine";
-  o.frequency.value=freq;
+  filter.type="lowpass";
+  filter.frequency.setValueAtTime(900,now);
+  filter.frequency.linearRampToValueAtTime(1450,now+dur*.55);
+  filter.frequency.linearRampToValueAtTime(1000,now+dur);
 
-  f.type="lowpass";
-  f.frequency.value=1100;
+  padBus.gain.setValueAtTime(.0001,now);
+  padBus.gain.exponentialRampToValueAtTime(vol,now+.32);
+  padBus.gain.setValueAtTime(vol,now+Math.max(.4,dur-.42));
+  padBus.gain.exponentialRampToValueAtTime(.0001,now+dur);
 
-  g.gain.setValueAtTime(.0001,now);
-  g.gain.exponentialRampToValueAtTime(vol,now+.25);
-  g.gain.setValueAtTime(vol,now+Math.max(.3,dur-.35));
-  g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+  padBus.connect(filter);
+  filter.connect(masterGain);
 
-  o.connect(f);
-  f.connect(g);
-  g.connect(masterGain);
+  [
+    {ratio:1, type:"sine", gain:1},
+    {ratio:1.5, type:"sine", gain:.42},
+    {ratio:2, type:"triangle", gain:.13}
+  ].forEach((p,idx)=>{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.type=p.type;
+    o.frequency.value=freq*p.ratio;
+    o.detune.value=idx===0?-4:idx===1?3:7;
+    g.gain.value=p.gain;
+    o.connect(g);
+    g.connect(padBus);
+    o.start(now);
+    o.stop(now+dur+.05);
+  });
 
-  o.start(now);
-  o.stop(now+dur+.05);
+  setTimeout(()=>{
+    try{padBus.disconnect()}catch(e){}
+    try{filter.disconnect()}catch(e){}
+  },(dur+.25)*1000);
+}
+
+function playWinterSparkle(freq,delayMs=0){
+  festiveNoteTimers.push(setTimeout(()=>{
+    if(!audioReady||muted)return;
+    playMagicBell(freq,.17,.025);
+  },delayMs));
 }
 
 /*
-  JINGLE BELLS — public-domain melody.
-  Bell/celesta timbre + very soft pads to make it feel magical
-  rather than like a ringtone.
+  JINGLE BELLS — recognizable melody, arranged as a small magical
+  celesta / winter-sky motif instead of a dry ringtone.
 */
 function playJingleBellsPhrase(){
   if(!audioReady||muted)return;
@@ -2218,7 +2479,14 @@ function playJingleBellsPhrase(){
   const C5=523.25;
   const D5=587.33;
 
-  const beat=255;
+  const beat=270;
+
+  /* tiny "snow sparkle" pickup */
+  playWinterSparkle(1046.50,0);
+  playWinterSparkle(1318.51,120);
+  playWinterSparkle(1567.98,245);
+
+  const introOffset=390;
 
   const notes=[
     [0,E5,1],[1,E5,1],[2,E5,2],
@@ -2232,28 +2500,46 @@ function playJingleBellsPhrase(){
 
   notes.forEach(([b,freq,len],idx)=>{
     festiveNoteTimers.push(setTimeout(()=>{
-      playMagicBell(freq,Math.max(.14,beat*len/1000*.88),idx%6===0?.09:.073);
+      const accent=idx%6===0;
+      playMagicBell(
+        freq,
+        Math.max(.18,beat*len/1000*.95),
+        accent ? .082 : .066
+      );
 
+      /* occasional high icy overtone */
       if(idx%5===0){
-        playMagicBell(freq*2,.10,.025);
+        festiveNoteTimers.push(setTimeout(()=>{
+          playMagicBell(freq*2,.13,.020);
+        },75));
       }
-    },b*beat));
+    },introOffset+b*beat));
   });
 
   /*
-    Soft "winter sky" harmony underneath.
+    Slow suspended harmony under the melody.
+    Major fifth + octave keeps it bright and "Christmas magic".
   */
   const pads=[
     [0,261.63],[4,261.63],[8,196.00],[12,261.63],
     [16,174.61],[20,261.63],[24,196.00],[28,196.00]
   ];
 
-  pads.forEach(([b,freq])=>{
+  pads.forEach(([b,freq],idx)=>{
     festiveNoteTimers.push(setTimeout(()=>{
-      playMagicPad(freq,beat*3.7/1000,.016);
-      playMagicPad(freq*1.5,beat*3.7/1000,.010);
-    },b*beat));
+      playMagicPad(freq,beat*3.85/1000,.0165);
+      if(idx%2===0){
+        playMagicPad(freq*2,beat*3.6/1000,.0065);
+      }
+    },introOffset+b*beat));
   });
+
+  /* little star-like accents between phrases */
+  [
+    [introOffset+7.2*beat,1174.66],
+    [introOffset+15.2*beat,1318.51],
+    [introOffset+23.8*beat,1046.50]
+  ].forEach(([t,f])=>playWinterSparkle(f,t));
 }
 
 function startFestiveMusic(){
@@ -2263,9 +2549,9 @@ function startFestiveMusic(){
   playJingleBellsPhrase();
 
   /*
-    Phrase length ≈ 8.2 s; small breathing gap before looping.
+    Magical Jingle Bells phrase with a short breathing gap before looping.
   */
-  festiveLoopHandle=setInterval(playJingleBellsPhrase,9000);
+  festiveLoopHandle=setInterval(playJingleBellsPhrase,9800);
 }
 
 function stopFestiveMusic(){
