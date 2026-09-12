@@ -1,9 +1,13 @@
-# convergencecontrol v2 inline
+# convergencecontrol v3 inline
 
-Carica questi file direttamente nella root della repo GitHub:
+Versione aggiornata con:
+- intestazione `MUSYCHEN-626 / INTERDIMENSIONAL CONTROL`
+- caratteri più grandi
+- status panel più leggibile
+- testi laterali e pannelli ingranditi
+
+Carica/sostituisci nella root della repo:
 - index.html
 - master.html
 - key.html
 - README.md
-
-Questa versione incorpora CSS e JavaScript dentro ogni pagina, quindi non dipende dalle cartelle css/ e js/.
