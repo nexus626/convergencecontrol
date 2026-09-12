@@ -119,79 +119,6 @@ body.resolved{background:radial-gradient(circle at center,#04251d 0,#020b0a 45%,
 @keyframes sideFade{0%{opacity:0;transform:translateY(12px)}12%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translateY(-32px)}}
 
 
-/* Resolution transition */
-body.resolved.resolving #normalCore{
-  animation:
-    pulse 3.2s ease-in-out infinite,
-    resolveCoreShift 4.8s linear forwards;
-}
-body.resolved.resolving #normalCosmos .r1{
-  animation:
-    spin 32s linear infinite,
-    resolveRingOuter 4.8s linear forwards;
-}
-body.resolved.resolving #normalCosmos .r2{
-  animation:
-    spinR 22s linear infinite,
-    resolveRingMiddle 4.8s linear forwards;
-}
-body.resolved.resolving #normalCosmos .r3{
-  animation:
-    spin 15s linear infinite,
-    resolveRingInner 4.8s linear forwards;
-}
-
-@keyframes resolveCoreShift{
-  0%{
-    background:radial-gradient(circle,#fff 0,#ffd0a8 16%,rgba(255,58,38,.92) 42%,rgba(121,0,18,.95) 68%,transparent 78%);
-    filter:drop-shadow(0 0 44px #ff4028) saturate(1.65);
-    transform:scale(1.58);
-  }
-  18%{
-    background:radial-gradient(circle,#fff 0,#ffe3a8 18%,rgba(255,120,36,.92) 44%,rgba(165,40,0,.94) 70%,transparent 78%);
-    filter:drop-shadow(0 0 48px #ff7a28) saturate(1.55);
-    transform:scale(1.48);
-  }
-  38%{
-    background:radial-gradient(circle,#fff 0,#fff0bf 18%,rgba(255,201,82,.9) 45%,rgba(184,120,0,.88) 71%,transparent 78%);
-    filter:drop-shadow(0 0 46px #ffd25b) saturate(1.42);
-    transform:scale(1.36);
-  }
-  58%{
-    background:radial-gradient(circle,#fff 0,#e4ffe4 18%,rgba(135,255,204,.84) 46%,rgba(25,126,112,.76) 71%,transparent 78%);
-    filter:drop-shadow(0 0 39px #88ffd7) saturate(1.26);
-    transform:scale(1.24);
-  }
-  78%{
-    background:radial-gradient(circle,#fff 0,#d8f5ff 19%,rgba(112,223,255,.82) 47%,rgba(24,91,169,.72) 72%,transparent 78%);
-    filter:drop-shadow(0 0 31px #7fe4ff) saturate(1.18);
-    transform:scale(1.12);
-  }
-  100%{
-    background:radial-gradient(circle,#fff 0,#b3e9ff 20%,rgba(65,140,255,.72) 48%,transparent 75%);
-    filter:drop-shadow(0 0 22px #64bfff) saturate(1);
-    transform:scale(1);
-  }
-}
-@keyframes resolveRingOuter{
-  0%{border-color:rgba(255,80,70,.78);box-shadow:0 0 26px rgba(255,70,55,.24);transform:scale(1.10)}
-  30%{border-color:rgba(255,171,82,.76);box-shadow:0 0 24px rgba(255,170,72,.2);transform:scale(1.07)}
-  60%{border-color:rgba(138,255,208,.68);box-shadow:0 0 20px rgba(138,255,208,.15);transform:scale(1.03)}
-  100%{border-color:rgba(140,200,255,.5);box-shadow:none;transform:scale(1)}
-}
-@keyframes resolveRingMiddle{
-  0%{border-color:rgba(255,98,84,.8);box-shadow:0 0 22px rgba(255,80,70,.24);transform:scale(1.12)}
-  35%{border-color:rgba(255,196,88,.76);box-shadow:0 0 21px rgba(255,196,88,.18);transform:scale(1.08)}
-  68%{border-color:rgba(142,236,255,.68);box-shadow:0 0 17px rgba(142,236,255,.15);transform:scale(1.03)}
-  100%{border-color:rgba(140,200,255,.5);box-shadow:none;transform:scale(1)}
-}
-@keyframes resolveRingInner{
-  0%{border-color:rgba(255,126,98,.84);box-shadow:0 0 19px rgba(255,96,76,.26);transform:scale(1.14)}
-  42%{border-color:rgba(255,220,120,.75);box-shadow:0 0 17px rgba(255,220,120,.18);transform:scale(1.09)}
-  75%{border-color:rgba(120,222,255,.7);box-shadow:0 0 15px rgba(120,222,255,.14);transform:scale(1.03)}
-  100%{border-color:rgba(140,200,255,.5);box-shadow:none;transform:scale(1)}
-}
-
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -370,7 +297,6 @@ function addButton(label,fn){const b=document.createElement("button");b.textCont
 function addNote(html){const s=document.createElement("span");s.className="phase-note";s.innerHTML=html;$("actionArea").appendChild(s)}
 
 function baseDefault(){
-  resetResolutionTransitionVisuals();
   document.body.className="";
   show("defaultView",true);show("cascadeView",false);show("archiveAlert",false);show("phase2Log",false);show("resolvedCard",false);
   clearAction();
@@ -382,41 +308,290 @@ function baseDefault(){
 }
 
 
-const RESOLUTION_TRANSITION_MS = 4800;
 
-function resetResolutionTransitionVisuals(){
-  document.body.classList.remove("resolving");
+/* Smooth NOVA state transitions */
+let novaTransitionRAF=null;
+let cascadeEntryUntil=0;
+
+const NOVA_PALETTE={
+  blue:{
+    core:[82,156,255],
+    mid:[158,226,255],
+    hot:[255,255,255],
+    outer:[15,73,160],
+    ring:[140,200,255],
+    glow:[90,185,255]
+  },
+  cyan:{
+    core:[83,224,238],
+    mid:[157,255,244],
+    hot:[255,255,255],
+    outer:[17,120,146],
+    ring:[126,239,246],
+    glow:[88,237,246]
+  },
+  mint:{
+    core:[117,245,190],
+    mid:[194,255,224],
+    hot:[255,255,255],
+    outer:[27,127,98],
+    ring:[142,255,211],
+    glow:[105,249,201]
+  },
+  yellow:{
+    core:[255,211,75],
+    mid:[255,239,159],
+    hot:[255,255,244],
+    outer:[167,104,0],
+    ring:[255,218,113],
+    glow:[255,207,68]
+  },
+  orange:{
+    core:[255,122,42],
+    mid:[255,193,105],
+    hot:[255,249,231],
+    outer:[156,48,0],
+    ring:[255,148,86],
+    glow:[255,111,45]
+  },
+  red:{
+    core:[241,42,62],
+    mid:[255,111,91],
+    hot:[255,244,221],
+    outer:[126,0,25],
+    ring:[255,91,108],
+    glow:[255,55,73]
+  }
+};
+
+function clamp01(v){return Math.max(0,Math.min(1,v))}
+function smooth01(v){
+  v=clamp01(v);
+  return v*v*(3-2*v);
+}
+function mixNum(a,b,t){return a+(b-a)*t}
+function mixRgb(a,b,t){
+  return [
+    Math.round(mixNum(a[0],b[0],t)),
+    Math.round(mixNum(a[1],b[1],t)),
+    Math.round(mixNum(a[2],b[2],t))
+  ];
+}
+function rgb(c,a=1){return `rgba(${c[0]},${c[1]},${c[2]},${a})`}
+
+function mixPalette(a,b,t){
+  return {
+    core:mixRgb(a.core,b.core,t),
+    mid:mixRgb(a.mid,b.mid,t),
+    hot:mixRgb(a.hot,b.hot,t),
+    outer:mixRgb(a.outer,b.outer,t),
+    ring:mixRgb(a.ring,b.ring,t),
+    glow:mixRgb(a.glow,b.glow,t)
+  };
+}
+
+function paletteAlong(names,t){
+  const count=names.length-1;
+  const scaled=clamp01(t)*count;
+  const idx=Math.min(count-1,Math.floor(scaled));
+  const local=smooth01(scaled-idx);
+  return mixPalette(
+    NOVA_PALETTE[names[idx]],
+    NOVA_PALETTE[names[idx+1]],
+    local
+  );
+}
+
+function applyNormalNovaPalette(p,scale=1){
   const core=$("normalCore");
-  const r1=document.querySelector("#normalCosmos .r1");
-  const r2=document.querySelector("#normalCosmos .r2");
-  const r3=document.querySelector("#normalCosmos .r3");
-  [core,r1,r2,r3].forEach(el=>{
-    if(!el) return;
-    el.style.animationDelay="";
+  if(!core)return;
+
+  core.style.background=
+    `radial-gradient(circle,${rgb(p.hot)} 0%,${rgb(p.mid)} 19%,${rgb(p.core,.92)} 46%,${rgb(p.outer,.82)} 69%,transparent 78%)`;
+  core.style.filter=`drop-shadow(0 0 34px ${rgb(p.glow,.95)}) saturate(1.25)`;
+  core.style.transform=`scale(${scale})`;
+
+  const rings=[
+    document.querySelector("#normalCosmos .r1"),
+    document.querySelector("#normalCosmos .r2"),
+    document.querySelector("#normalCosmos .r3")
+  ];
+  rings.forEach((r,i)=>{
+    if(!r)return;
+    r.style.borderColor=rgb(p.ring,.68-(i*.06));
+    r.style.boxShadow=`0 0 ${19-(i*3)}px ${rgb(p.glow,.13)}`;
   });
 }
 
-function applyResolutionTransitionVisuals(){
-  const changedAt=Number(game.stateChangedAt||Date.now());
-  const elapsed=Math.max(0,Date.now()-changedAt);
-  const clamped=Math.min(elapsed,RESOLUTION_TRANSITION_MS);
-  const delay=`0s, -${clamped}ms`;
-
-  document.body.classList.add("resolving");
-
+function clearNormalNovaInline(){
   const core=$("normalCore");
-  const r1=document.querySelector("#normalCosmos .r1");
-  const r2=document.querySelector("#normalCosmos .r2");
-  const r3=document.querySelector("#normalCosmos .r3");
+  if(core){
+    core.style.background="";
+    core.style.filter="";
+    core.style.transform="";
+  }
+  ["r1","r2","r3"].forEach(cls=>{
+    const r=document.querySelector(`#normalCosmos .${cls}`);
+    if(r){
+      r.style.borderColor="";
+      r.style.boxShadow="";
+    }
+  });
+}
 
-  if(core) core.style.animationDelay=delay;
-  if(r1) r1.style.animationDelay=delay;
-  if(r2) r2.style.animationDelay=delay;
-  if(r3) r3.style.animationDelay=delay;
+function animateNormalNova(names,duration=3200,startScale=1,endScale=1){
+  if(novaTransitionRAF)cancelAnimationFrame(novaTransitionRAF);
 
-  if(elapsed>=RESOLUTION_TRANSITION_MS){
-    document.body.classList.remove("resolving");
-    [core,r1,r2,r3].forEach(el=>{ if(el) el.style.animationDelay=""; });
+  const start=performance.now();
+
+  function frame(now){
+    const raw=clamp01((now-start)/duration);
+    const overall=smooth01(raw);
+    const p=paletteAlong(names,overall);
+    const scale=mixNum(startScale,endScale,overall);
+
+    applyNormalNovaPalette(p,scale);
+
+    if(raw<1){
+      novaTransitionRAF=requestAnimationFrame(frame);
+    }else{
+      novaTransitionRAF=null;
+      clearNormalNovaInline();
+    }
+  }
+
+  novaTransitionRAF=requestAnimationFrame(frame);
+}
+
+function applyCrisisNovaPalette(p,scale){
+  const core=$("crisisCore");
+  if(!core)return;
+
+  core.style.background=
+    `radial-gradient(circle,${rgb(p.hot)} 0%,${rgb(p.mid)} 17%,${rgb(p.core,.95)} 43%,${rgb(p.outer,.88)} 67%,transparent 80%)`;
+  core.style.filter=`drop-shadow(0 0 56px ${rgb(p.glow,.98)}) saturate(1.5)`;
+  core.style.transform=`scale(${scale})`;
+
+  [
+    [$("cr1"),1.02],
+    [$("cr2"),1.00],
+    [$("cr3"),.98]
+  ].forEach(([r,s],i)=>{
+    if(!r)return;
+    r.style.borderColor=rgb(p.ring,.74-(i*.07));
+    r.style.boxShadow=`0 0 ${25-(i*4)}px ${rgb(p.glow,.16)}`;
+    r.style.transform=`scale(${s})`;
+  });
+}
+
+function clearCrisisNovaInline(){
+  const core=$("crisisCore");
+  if(core){
+    core.style.background="";
+    core.style.filter="";
+    core.style.transform="";
+  }
+  ["cr1","cr2","cr3"].forEach(id=>{
+    const r=$(id);
+    if(r){
+      r.style.borderColor="";
+      r.style.boxShadow="";
+      r.style.transform="";
+    }
+  });
+}
+
+function animateCascadeEntry(){
+  if(novaTransitionRAF)cancelAnimationFrame(novaTransitionRAF);
+
+  const duration=3600;
+  const start=performance.now();
+  cascadeEntryUntil=Date.now()+duration;
+
+  function frame(now){
+    const raw=clamp01((now-start)/duration);
+    const overall=smooth01(raw);
+
+    /*
+      Controlled blue equilibrium → energetic white/yellow heating →
+      orange/red instability.
+    */
+    const p=paletteAlong(
+      ["blue","cyan","yellow","orange","red"],
+      overall
+    );
+
+    /*
+      The NOVA visibly expands as the Cascade begins.
+    */
+    const scale=mixNum(.95,1.72,overall);
+
+    applyCrisisNovaPalette(p,scale);
+
+    if(raw<1){
+      novaTransitionRAF=requestAnimationFrame(frame);
+    }else{
+      novaTransitionRAF=null;
+      clearCrisisNovaInline();
+    }
+  }
+
+  novaTransitionRAF=requestAnimationFrame(frame);
+}
+
+function triggerNovaTransition(previousState,currentState){
+  if(previousState===currentState)return;
+
+  /*
+    Stable/control → Phase 2:
+    cool stable NOVA heats into conflict.
+  */
+  if(currentState==="PHASE2"){
+    animateNormalNova(
+      ["blue","cyan","yellow","orange","red"],
+      3300,
+      1,
+      1.10
+    );
+    return;
+  }
+
+  /*
+    Phase 2 → controlled equilibrium.
+  */
+  if(
+    previousState==="PHASE2" &&
+    (currentState==="CLEARED" || currentState==="AUTO_ANCHOR")
+  ){
+    animateNormalNova(
+      ["red","orange","yellow","cyan","blue"],
+      3600,
+      1.10,
+      1
+    );
+    return;
+  }
+
+  /*
+    Controlled equilibrium → Cascade:
+    same heating path, but followed by expansion/explosion.
+  */
+  if(currentState==="CASCADE"){
+    animateCascadeEntry();
+    return;
+  }
+
+  /*
+    Cascade → full solution:
+    longer cooling/stabilisation sequence.
+  */
+  if(currentState==="RESOLVED"){
+    animateNormalNova(
+      ["red","orange","yellow","mint","cyan","blue"],
+      5200,
+      1.58,
+      1
+    );
   }
 }
 
@@ -442,7 +617,7 @@ function render(){
     text("eyebrow","ANCHOR PROTOCOL / CRITICAL ANALYSIS");
     text("title","TIMELINE CONFLICT");
     text("subtitle","MULTIPLE REFERENCE FRAMES COMPETING FOR STABILITY");
-    text("archive","VERIFIED");text("conv","STRESSED");text("integrity","100.00%");
+    text("archive","VERIFIED");text("conv","STRESSED");text("integrity","REDUCED");
     text("frame","UNRESOLVED");text("anchor","ANALYZING");
     addButton("ENTER ANCHOR PROTOCOL",()=>openModal("PHASE2"));
     show("phase2Log",true);
@@ -488,9 +663,12 @@ function render(){
     text("archive","VERIFIED");text("conv","STABLE");text("integrity","100.00%");
     text("frame","ALL TIMELINES");text("anchor","DISTRIBUTED");
     show("resolvedCard",true);
-    applyResolutionTransitionVisuals();
     stopSiren();
     stopVoiceLoop();
+  }
+
+  if(lastState!==s){
+    triggerNovaTransition(lastState,s);
   }
 
   updateAudioState(s);
@@ -629,13 +807,16 @@ function startTimer(){
     text("timer",`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`);
 
     const danger=1-fraction;
-    const pulse=Math.sin(Date.now()/230)*.08;
-    const scale=1.15+danger*2.1+pulse;
-    $("crisisCore").style.transform=`scale(${scale})`;
-    $("crisisCore").style.filter=`drop-shadow(0 0 ${35+danger*80}px rgba(255,${Math.round(75-danger*50)},25,.98)) saturate(${1+danger*1.8})`;
-    $("cr1").style.transform=`scale(${1.02 + Math.sin(Date.now()/420)*(.045+danger*.08) - danger*.06})`;
-    $("cr2").style.transform=`scale(${1.0 + Math.sin(Date.now()/330+1)*(.07+danger*.1) - danger*.1})`;
-    $("cr3").style.transform=`scale(${0.98 + Math.sin(Date.now()/260+2)*(.09+danger*.12) - danger*.14})`;
+
+    if(Date.now()>=cascadeEntryUntil){
+      const pulse=Math.sin(Date.now()/230)*.08;
+      const scale=1.15+danger*2.1+pulse;
+      $("crisisCore").style.transform=`scale(${scale})`;
+      $("crisisCore").style.filter=`drop-shadow(0 0 ${35+danger*80}px rgba(255,${Math.round(75-danger*50)},25,.98)) saturate(${1+danger*1.8})`;
+      $("cr1").style.transform=`scale(${1.02 + Math.sin(Date.now()/420)*(.045+danger*.08) - danger*.06})`;
+      $("cr2").style.transform=`scale(${1.0 + Math.sin(Date.now()/330+1)*(.07+danger*.1) - danger*.1})`;
+      $("cr3").style.transform=`scale(${0.98 + Math.sin(Date.now()/260+2)*(.09+danger*.12) - danger*.14})`;
+    }
 
     if(Math.random()<(0.03+danger*.11))burstFrom("crisisCore",2+Math.floor(danger*6));
   };
