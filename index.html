@@ -1,52 +1,426 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Convergence — Control Station</title><style>
-:root{--bg:#02040a;--panel:rgba(5,11,24,.82);--line:rgba(140,200,255,.22);--accent:#9fd8ff;--text:#eef7ff;--muted:#7d93aa;--ok:#a5ffd6;--bad:#ff6b7a}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at center,#0a1830 0,#02040a 46%,#010207 100%);color:var(--text);font-family:"Courier New",monospace}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.4px);background-size:95px 95px}
-.screen{min-height:100vh;padding:26px 34px;display:grid;grid-template-rows:auto 1fr auto}
-header,footer{display:flex;justify-content:space-between;border-color:var(--line)}header{border-bottom:1px solid var(--line);padding-bottom:14px}footer{border-top:1px solid var(--line);padding-top:12px;font-size:10px;color:var(--muted)}
-header h2{letter-spacing:.25em;margin:8px 0 0;font-size:22px}header small,.right small{color:var(--muted);font-size:15px;letter-spacing:.08em}.right{text-align:right}.right b{display:block;color:var(--accent);margin-top:8px;font-size:20px}
-main{display:grid;grid-template-columns:230px 1fr 230px;gap:28px;align-items:center}aside{color:var(--muted);font-size:14px;line-height:1.9}aside p{border-left:1px solid var(--line);padding-left:14px;margin:28px 0}aside b{color:var(--accent);font-weight:normal;font-size:18px;display:inline-block;margin-top:2px}
-.center{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:660px;justify-content:center}
-.cosmos{width:390px;height:390px;position:relative;display:grid;place-items:center}.ring{position:absolute;border:1px solid rgba(140,200,255,.48);border-radius:50%}.r1{width:355px;height:355px;animation:spin 32s linear infinite}.r2{width:280px;height:280px;border-style:dashed;animation:spinR 22s linear infinite}.r3{width:205px;height:205px;animation:spin 15s linear infinite}.core{width:94px;height:94px;border-radius:50%;background:radial-gradient(circle,#fff 0,#aee6ff 22%,rgba(65,140,255,.7) 48%,transparent 74%);filter:drop-shadow(0 0 22px #64bfff);animation:pulse 3.2s ease-in-out infinite}
-.center>small{letter-spacing:.28em;color:var(--muted);font-size:14px}.center>h1{letter-spacing:.16em;font-weight:400;margin:14px 0 10px;font-size:54px;line-height:1.12}.center>p{color:var(--accent);letter-spacing:.15em;font-size:16px;margin:0 0 6px}
-.status{display:grid;grid-template-columns:repeat(3,1fr);width:min(860px,96vw);margin-top:28px;border:1px solid var(--line);background:rgba(3,9,20,.58)}.status div{padding:18px 20px;border-right:1px solid var(--line)}.status div:last-child{border-right:0}.status small{display:block;color:var(--muted);font-size:12px;letter-spacing:.08em}.status b{display:block;color:var(--ok);margin-top:8px;font-size:20px;font-weight:normal;letter-spacing:.04em}
-.panel{width:min(900px,96vw);margin-top:18px;padding:22px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(9px);font-size:16px}.row{display:flex;gap:10px}input{flex:1;background:#02060e;border:1px solid rgba(140,200,255,.5);color:var(--text);padding:14px 16px;text-transform:uppercase;font-size:16px}button{background:#09172d;color:var(--accent);border:1px solid rgba(140,200,255,.5);padding:14px 16px;cursor:pointer;font:inherit;font-size:16px}button:hover{border-color:var(--accent);color:#fff}.wide{width:100%;margin-top:12px}.hidden{display:none!important}.timer{font-size:68px;color:var(--bad);margin:8px 0 18px}.timelineGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.timelineGrid button small{display:block;color:var(--muted);margin-top:7px;font-size:13px}
-body.cascade .core{background:radial-gradient(circle,#fff 0,#ffbac2 22%,rgba(255,65,92,.7) 48%,transparent 74%);filter:drop-shadow(0 0 25px #ff5368)}body.cascade .ring{border-color:rgba(255,90,110,.55)}
-.master{padding:40px 20px}.masterWrap{width:min(900px,100%);margin:auto;position:relative;z-index:1}.masterGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.masterGrid button{min-height:58px}.master label{display:block;color:var(--muted);font-size:10px;margin:12px 0 6px}.master input{width:100%}.danger{color:var(--bad);border-color:rgba(255,107,122,.6)}.success{color:var(--ok);border-color:rgba(165,255,214,.6)}a{color:var(--accent)}.key{max-width:560px;margin:10vh auto;text-align:center}.mini{border:1px solid var(--line);padding:14px;margin:20px auto;width:220px}.mini small{display:block;color:var(--muted)}.mini b{color:var(--accent)}.dangerText{color:var(--bad)}.successText{color:var(--ok)}
-@keyframes spin{to{transform:rotate(360deg)}}@keyframes spinR{to{transform:rotate(-360deg)}}@keyframes pulse{0%,100%{transform:scale(.95)}50%{transform:scale(1.08)}}
-@media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.timelineGrid{grid-template-columns:repeat(2,1fr)}.cosmos{width:310px;height:310px}.r1{width:290px;height:290px}.r2{width:230px;height:230px}.r3{width:170px;height:170px}.masterGrid{grid-template-columns:1fr}.center>h1{font-size:36px}.center>p{font-size:14px}.status{width:min(96vw,96vw)}.status b{font-size:16px}}
-</style></head><body><div class="screen">
-<header><div><small>MUSYCHEN-626 / INTERDIMENSIONAL CONTROL</small><h2>THE CONVERGENCE</h2></div><div class="right"><small>LOCAL TIME</small><b id="clock">--:--:--</b></div></header>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Convergence — Control Station</title>
+<script src="remote-config.js"></script>
+<style>
+:root{
+  --bg:#010309; --panel:rgba(4,10,22,.84); --line:rgba(135,196,255,.23);
+  --accent:#9fd8ff; --text:#eef8ff; --muted:#7f98b2; --ok:#a8ffda;
+  --critical:#ff405f; --critical2:#ff8d5d; --warn:#ffd37b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#010309;color:var(--text);font-family:"Courier New",monospace}
+body{height:100dvh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.5px);background-size:96px 96px}
+#plasma{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.screen{position:relative;z-index:2;width:100vw;height:100dvh;overflow:hidden;padding:clamp(14px,1.5vw,26px);display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+header,footer{display:flex;justify-content:space-between;align-items:flex-start;border-color:var(--line)}
+header{border-bottom:1px solid var(--line);padding-bottom:clamp(8px,1vh,14px)}
+footer{border-top:1px solid var(--line);padding-top:9px;color:var(--muted);font-size:clamp(9px,.72vw,12px);letter-spacing:.08em}
+.brand small,.clock small{font-size:clamp(11px,.82vw,15px);color:var(--muted);letter-spacing:.08em}
+.brand h2{margin:6px 0 0;font-size:clamp(17px,1.35vw,25px);letter-spacing:.27em;font-weight:700}
+.clock{text-align:right}.clock b{display:block;color:var(--accent);font-size:clamp(16px,1.25vw,22px);margin-top:5px}
+main{min-height:0;display:grid;grid-template-columns:minmax(170px,13vw) minmax(0,1fr) minmax(170px,13vw);gap:clamp(10px,1.7vw,30px);align-items:center}
+aside{font-size:clamp(11px,.83vw,15px);line-height:1.75;color:var(--muted)}
+aside p{border-left:1px solid var(--line);padding-left:12px;margin:clamp(12px,2.1vh,26px) 0}
+aside b{display:inline-block;color:var(--accent);font-size:clamp(13px,1vw,18px);font-weight:400;margin-top:2px}
+.center{position:relative;min-width:0;min-height:0;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.cosmos{position:relative;width:min(35vh,360px);height:min(35vh,360px);min-width:230px;min-height:230px;display:grid;place-items:center;transition:filter .5s ease,transform .5s ease}
+.ring{position:absolute;border:1px solid rgba(140,200,255,.46);border-radius:50%;transition:border-color .4s ease,box-shadow .4s ease}
+.r1{width:94%;height:94%;animation:spin 32s linear infinite}
+.r2{width:74%;height:74%;border-style:dashed;animation:spinR 22s linear infinite}
+.r3{width:54%;height:54%;animation:spin 15s linear infinite}
+.core{width:25%;height:25%;min-width:72px;min-height:72px;border-radius:50%;background:radial-gradient(circle,#fff 0,#b3e9ff 20%,rgba(65,140,255,.72) 48%,transparent 75%);filter:drop-shadow(0 0 22px #64bfff);animation:pulse 3.2s ease-in-out infinite;transition:background .4s ease,filter .4s ease}
+.eyebrow{font-size:clamp(11px,.84vw,15px);letter-spacing:.28em;color:var(--muted);margin-top:min(1.1vh,10px)}
+h1.hero{font-size:clamp(26px,2.8vw,52px);line-height:1.08;letter-spacing:.16em;font-weight:400;margin:clamp(6px,.8vh,10px) 0}
+.subtitle{font-size:clamp(11px,.9vw,16px);letter-spacing:.15em;color:var(--accent);margin:0}
+.status{display:grid;grid-template-columns:repeat(3,1fr);width:min(860px,74vw);margin-top:clamp(12px,1.8vh,22px);border:1px solid var(--line);background:rgba(3,9,20,.58)}
+.status div{padding:clamp(10px,1.4vh,17px) 18px;border-right:1px solid var(--line)}
+.status div:last-child{border-right:0}.status small{display:block;color:var(--muted);font-size:clamp(9px,.7vw,12px);letter-spacing:.07em}
+.status b{display:block;color:var(--ok);font-size:clamp(14px,1.15vw,21px);font-weight:400;margin-top:5px}
+.action-area{min-height:52px;margin-top:clamp(10px,1.3vh,16px);display:flex;gap:10px;align-items:center;justify-content:center}
+button{font:inherit;cursor:pointer;background:rgba(8,22,43,.9);color:var(--accent);border:1px solid rgba(140,200,255,.5);padding:11px 16px;letter-spacing:.08em}
+button:hover{border-color:var(--accent);color:#fff}
+.phase-note{font-size:clamp(10px,.75vw,13px);color:var(--muted);letter-spacing:.08em}
+.timeline-panel{width:min(950px,76vw);margin-top:clamp(8px,1.1vh,12px)}
+.timeline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.timeline-card{padding:12px 10px;background:rgba(13,10,20,.8);border-color:rgba(255,85,103,.48);color:#ffbdc6}
+.timeline-card strong{display:block;font-size:clamp(14px,1vw,18px);letter-spacing:.12em}
+.timeline-card small{display:block;color:#d8959f;margin-top:5px}
+.countdown{color:var(--critical);font-size:clamp(46px,5.5vw,94px);letter-spacing:.09em;line-height:1;margin:2px 0 8px;text-shadow:0 0 24px rgba(255,55,83,.32)}
+.manual-link{margin-top:9px;background:transparent;border:0;color:rgba(255,190,200,.64);font-size:clamp(9px,.7vw,12px);text-decoration:underline;text-underline-offset:4px}
+.hidden{display:none!important}
+.audio-controls{position:fixed;z-index:9;bottom:17px;right:18px;display:flex;gap:8px}
+.audio-controls button{padding:8px 11px;font-size:11px;background:rgba(2,7,15,.88)}
+.modal-backdrop{position:fixed;z-index:20;inset:0;background:rgba(0,3,10,.68);backdrop-filter:blur(7px);display:grid;place-items:center;padding:18px}
+.modal{width:min(650px,92vw);border:1px solid rgba(150,208,255,.46);background:rgba(2,8,18,.97);box-shadow:0 0 60px rgba(68,151,255,.15);padding:26px}
+.modal.critical{border-color:rgba(255,74,98,.7);box-shadow:0 0 65px rgba(255,40,70,.18)}
+.modal small{display:block;color:var(--muted);letter-spacing:.15em;margin-bottom:9px}
+.modal h2{font-size:clamp(20px,2vw,30px);letter-spacing:.1em;font-weight:400;margin:0 0 18px}
+.modal-row{display:flex;gap:9px}.modal input{min-width:0;flex:1;background:#01050c;border:1px solid rgba(150,208,255,.5);color:#fff;padding:14px 15px;font:inherit;text-transform:uppercase;font-size:16px}
+.modal-feedback{min-height:20px;margin-top:12px;color:var(--warn);font-size:13px}
+.system-log{position:fixed;z-index:5;left:50%;bottom:62px;transform:translateX(-50%);width:min(900px,78vw);height:64px;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .3s}
+.system-log.active{opacity:.8}.system-log div{font-size:11px;line-height:1.5;color:#ff9aaa;text-align:left;white-space:nowrap}
+body.phase2,body.cascade{background:radial-gradient(circle at center,#22040b 0,#070207 44%,#010106 100%)}
+body.phase2 .core,body.cascade .core{background:radial-gradient(circle,#fff 0,#ffd5d9 18%,#ff6a7d 37%,rgba(215,20,55,.75) 56%,transparent 76%);filter:drop-shadow(0 0 30px #ff3e5b)}
+body.phase2 .ring,body.cascade .ring{border-color:rgba(255,83,103,.58);box-shadow:0 0 22px rgba(255,52,80,.05)}
+body.phase2 .status b,body.cascade .status b{color:#ffb7c0}
+body.cascade .cosmos{animation:shake 1.1s infinite}
+body.resolved .core{background:radial-gradient(circle,#fff 0,#d5fff2 22%,rgba(74,255,193,.72) 48%,transparent 76%);filter:drop-shadow(0 0 30px #63ffc8)}
+body.resolved .ring{border-color:rgba(112,255,207,.55)}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes spinR{to{transform:rotate(-360deg)}}@keyframes pulse{0%,100%{transform:scale(.95)}50%{transform:scale(1.08)}}@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}}
+@media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}h1.hero{font-size:clamp(24px,7vw,38px)}}
+</style>
+</head>
+<body>
+<canvas id="plasma"></canvas>
+<div class="screen">
+<header>
+  <div class="brand"><small>MUSYCHEN-626 / INTERDIMENSIONAL CONTROL</small><h2>THE CONVERGENCE</h2></div>
+  <div class="clock"><small>LOCAL TIME</small><b id="clock">--:--:--</b></div>
+</header>
 <main>
-<aside><p>SPACETIME NODE<br><b>C-2026.12</b></p><p>TEMPORAL DRIFT<br><b id="drift">+0.0028%</b></p><p>ARCHIVE LINK<br><b>CONNECTED</b></p></aside>
+<aside>
+  <p>SPACETIME NODE<br><b>C-2026.12</b></p>
+  <p>TEMPORAL DRIFT<br><b id="drift">+0.0028%</b></p>
+  <p>ARCHIVE LINK<br><b id="archiveLink">CONNECTED</b></p>
+</aside>
+
 <section class="center">
-<div class="cosmos"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="core"></i></div>
-<small id="eyebrow">INTERDIMENSIONAL EVENT ACTIVE</small><h1 id="title">WELCOME TO THE CONVERGENCE</h1><p id="subtitle">SPACETIME SYNCHRONIZATION UNDER CONTROL</p>
-<div class="status"><div><small>CONVERGENCE STATUS</small><b id="conv">STABLE</b></div><div><small>ARCHIVE STATUS</small><b id="archive">MONITORING</b></div><div><small>TIMELINE INTEGRITY</small><b id="integrity">100.00%</b></div></div>
-<div id="message" class="panel hidden"></div>
-<div id="codeBox" class="panel hidden"><label id="codeLabel">ENTER PROTOCOL CODE</label><div class="row"><input id="code"><button id="submitCode">VALIDATE</button></div><p id="feedback"></p></div>
-<div id="cascade" class="panel hidden"><small>CASCADE WINDOW</small><div id="timer" class="timer">10:00</div><div class="timelineGrid"><button data-t="ASTRA">ASTRA<small>A7F2</small></button><button data-t="NOVA">NOVA<small>N4C8</small></button><button data-t="VEGA">VEGA<small>V2D6</small></button><button data-t="UMBRA">UMBRA<small>U9B3</small></button></div><button id="overrideBtn" class="wide">MANUAL OVERRIDE</button><div id="overrideBox" class="hidden"><div class="row"><input id="override" placeholder="ENTER COMMAND"><button id="exec">EXECUTE</button></div><p id="overrideFeedback"></p></div></div>
-<div id="resolved" class="panel hidden"><b>DISTRIBUTED CONVERGENCE ESTABLISHED</b><h1>MERRY CHRISTMAS</h1><p>ALL TIMELINES COEXIST.</p></div>
+  <div class="cosmos"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="core"></i></div>
+  <div class="eyebrow" id="eyebrow">INTERDIMENSIONAL EVENT ACTIVE</div>
+  <h1 class="hero" id="title">WELCOME TO THE CONVERGENCE</h1>
+  <p class="subtitle" id="subtitle">SPACETIME SYNCHRONIZATION UNDER CONTROL</p>
+
+  <div class="status">
+    <div><small>CONVERGENCE STATUS</small><b id="conv">STABLE</b></div>
+    <div><small>ARCHIVE STATUS</small><b id="archive">PENDING</b></div>
+    <div><small>TIMELINE INTEGRITY</small><b id="integrity">100.00%</b></div>
+  </div>
+
+  <div id="actionArea" class="action-area"></div>
+
+  <div id="timelinePanel" class="timeline-panel hidden">
+    <div id="countdownWrap" class="hidden"><div class="countdown" id="timer">10:00</div></div>
+    <div class="timeline-grid">
+      <button class="timeline-card" data-timeline="ASTRA"><strong>ASTRA</strong><small>A7F2</small></button>
+      <button class="timeline-card" data-timeline="NOVA"><strong>NOVA</strong><small>N4C8</small></button>
+      <button class="timeline-card" data-timeline="VEGA"><strong>VEGA</strong><small>V2D6</small></button>
+      <button class="timeline-card" data-timeline="UMBRA"><strong>UMBRA</strong><small>U9B3</small></button>
+    </div>
+    <button id="manualOverride" class="manual-link">advanced emergency control / manual override</button>
+  </div>
 </section>
-<aside><p>PRIMARY FIELD<br><b>ACTIVE</b></p><p>REFERENCE FRAME<br><b id="frame">LOCKED</b></p><p>ANCHOR STATUS<br><b id="anchor">STANDBY</b></p><p>SYSTEM CODE<br><b id="sys">CX-0000</b></p></aside>
-</main><footer><span>CONVERGENCE CONTROL SYSTEM / BUILD 26.12</span><span>● CONTROL STATION ONLINE</span></footer></div><script>const C={defaultState:"WELCOME",phase1Code:"AR-4721",phase2Code:"NOVA-2974",finalCommand:"STABILIZE ALL TIMELINES",cascadeMinutes:10};</script><script>
-const $=id=>document.getElementById(id),state=()=>localStorage.getItem("convergenceState")||C.defaultState;
-const get=(k,d)=>localStorage.getItem(k)||d, norm=s=>(s||"").trim().replace(/\s+/g," ").toUpperCase(), show=(id,on=1)=>$(id)?.classList.toggle("hidden",!on), text=(id,v)=>{$(id)&&($(id).textContent=v)};
-function clear(){["message","codeBox","cascade","resolved"].forEach(x=>show(x,0));document.body.classList.remove("cascade")}
-function base(){clear();text("eyebrow","INTERDIMENSIONAL EVENT ACTIVE");text("title","WELCOME TO THE CONVERGENCE");text("subtitle","SPACETIME SYNCHRONIZATION UNDER CONTROL");text("conv","STABLE");text("archive","MONITORING");text("integrity","100.00%");text("anchor","STANDBY");text("frame","LOCKED")}
-function render(){base();let s=state();
-if(s==="PHASE1"){text("title","ARCHIVE ANOMALY DETECTED");text("subtitle","PRE-CONVERGENCE MEMORY RECORDS REQUIRE RECONSTRUCTION");text("archive","CORRUPTED");text("integrity","96.41%");show("message");$("message").innerHTML="ARCHIVE RECONSTRUCTION ACTIVE<br><small>Recover and validate corrupted Memory Records.</small>";show("codeBox");text("codeLabel","ENTER ARCHIVE RECONSTRUCTION CODE")}
-if(s==="PHASE1_COMPLETE"){text("title","ARCHIVE RESTORED");text("subtitle","FOUR COMPATIBLE TIMELINES DETECTED");text("archive","VERIFIED");text("anchor","PENDING");show("message");$("message").innerHTML="ASTRA &nbsp; NOVA &nbsp; VEGA &nbsp; UMBRA<br><small>ANCHOR PROTOCOL awaiting authorization.</small>"}
-if(s==="PHASE2"){text("title","ANCHOR PROTOCOL ACTIVE");text("subtitle","IDENTIFY A STABLE REFERENCE TIMELINE");text("archive","VERIFIED");text("anchor","ANALYZING");show("message");$("message").innerHTML="ASTRA &nbsp; NOVA &nbsp; VEGA &nbsp; UMBRA";show("codeBox");text("codeLabel","ENTER ANCHOR PROTOCOL CODE")}
-if(s==="CLEARED"||s==="PROVISIONAL"){text("title","CONVERGENCE STABLE");text("subtitle",s==="PROVISIONAL"?"PROVISIONAL PRIMARY ANCHOR ESTABLISHED":"PRIMARY ANCHOR ESTABLISHED");text("archive","VERIFIED");text("anchor",s==="PROVISIONAL"?"PROVISIONAL":"ACTIVE");text("frame","NOVA");show("message");$("message").innerHTML=(s==="PROVISIONAL"?"AUTOMATIC STABILIZATION COMPLETE":"CASE CLOSED")+"<br><small>All registered Variants cleared.</small>"}
-if(s==="CASCADE"){document.body.classList.add("cascade");text("eyebrow","EMERGENCY PROTOCOL ACTIVE");text("title","CASCADE FAILURE");text("subtitle","PRIMARY ANCHOR INSTABILITY DETECTED");text("conv","CRITICAL");text("archive","EMERGENCY");text("anchor","FAILED");text("frame","UNSTABLE");show("cascade");startTimer()}
-if(s==="RESOLVED"){text("eyebrow","CONVERGENCE RESTORED");text("title","CASCADE TERMINATED");text("subtitle","ALL ACTIVE TIMELINES SYNCHRONIZED");text("anchor","DISTRIBUTED");text("frame","ALL TIMELINES");show("resolved")}}
-function validate(){let s=state(),v=norm($("code").value),ok=s==="PHASE1"?norm(get("phase1Code",C.phase1Code)):norm(get("phase2Code",C.phase2Code));if(v===ok){localStorage.setItem("convergenceState",s==="PHASE1"?"PHASE1_COMPLETE":"CLEARED");text("feedback","CODE ACCEPTED.");setTimeout(render,400)}else text("feedback","INVALID CODE.")}
-$("submitCode").onclick=validate;$("code").addEventListener("keydown",e=>e.key==="Enter"&&validate());
-document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>text("overrideFeedback",b.dataset.t+" SELECTED — SINGLE-TIMELINE STABILIZATION FAILED."));
-$("overrideBtn").onclick=()=>show("overrideBox",$("overrideBox").classList.contains("hidden"));
-function exec(){if(norm($("override").value)===norm(get("finalCommand",C.finalCommand))){text("overrideFeedback","COMMAND ACCEPTED — RELEASING PRIMARY ANCHOR...");setTimeout(()=>{localStorage.setItem("convergenceState","RESOLVED");render()},1200)}else text("overrideFeedback","COMMAND REJECTED — CONFIGURATION UNSTABLE.")}
-$("exec").onclick=exec;$("override").addEventListener("keydown",e=>e.key==="Enter"&&exec());
-let h;function startTimer(){clearInterval(h);let mins=Number(get("timerMinutes",C.cascadeMinutes)),start=Number(localStorage.getItem("cascadeStart"))||Date.now();localStorage.setItem("cascadeStart",start);h=setInterval(()=>{let r=Math.max(0,mins*60000-(Date.now()-start)),s=Math.ceil(r/1000);text("timer",String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"));text("integrity",Math.max(12,71.32-(1-r/(mins*60000))*55).toFixed(2)+"%")},250)}
-setInterval(()=>text("clock",new Date().toLocaleTimeString("it-IT",{hour12:false})),1000);setInterval(()=>{text("drift","+"+(0.002+Math.random()*.003).toFixed(4)+"%");text("sys","CX-"+Math.floor(1000+Math.random()*9000))},5000);window.addEventListener("storage",render);render();
-</script></body></html>
+
+<aside>
+  <p>PRIMARY FIELD<br><b id="field">ACTIVE</b></p>
+  <p>REFERENCE FRAME<br><b id="frame">LOCKED</b></p>
+  <p>ANCHOR STATUS<br><b id="anchor">STANDBY</b></p>
+  <p>SYSTEM CODE<br><b id="systemCode">CX-0000</b></p>
+</aside>
+</main>
+<footer><span>CONVERGENCE CONTROL SYSTEM / BUILD 26.12</span><span id="online">● CONTROL STATION ONLINE</span></footer>
+</div>
+
+<div id="systemLog" class="system-log"></div>
+
+<div class="audio-controls">
+  <button id="audioBtn">INITIALIZE AUDIO</button>
+  <button id="muteBtn" class="hidden">MUTE</button>
+</div>
+
+<div id="modalBackdrop" class="modal-backdrop hidden">
+  <div id="modal" class="modal">
+    <small id="modalEyebrow">SYSTEM REQUEST</small>
+    <h2 id="modalTitle">ENTER PROTOCOL CODE</h2>
+    <div class="modal-row">
+      <input id="modalInput" autocomplete="off" spellcheck="false">
+      <button id="modalSubmit">VALIDATE</button>
+    </div>
+    <div id="modalFeedback" class="modal-feedback"></div>
+  </div>
+</div>
+
+<script>
+const API_URL = window.CONV_API_URL || "";
+const LOCAL_DEFAULTS = {
+  state:"WELCOME",
+  phase1Code:"AR-4721",
+  phase2Code:"NOVA-2974",
+  finalCommand:"STABILIZE ALL TIMELINES",
+  timerMinutes:10,
+  cascadeStart:0
+};
+const $=id=>document.getElementById(id);
+const normalize=s=>(s||"").trim().replace(/\s+/g," ").toUpperCase();
+const remoteEnabled=()=>/^https:\/\/script\.google\.com\//.test(API_URL);
+
+let gameState = {...LOCAL_DEFAULTS};
+let lastStateName = "";
+let pollHandle = null;
+let timerHandle = null;
+let modalMode = "";
+let audioReady = false, muted = false;
+let audioCtx, masterGain, humGain, alarmGain, humOsc1, humOsc2, alarmOsc;
+
+function localGet(){
+  return {
+    state: localStorage.getItem("convergenceState") || "WELCOME",
+    timerMinutes:Number(localStorage.getItem("timerMinutes")||10),
+    cascadeStart:Number(localStorage.getItem("cascadeStart")||0),
+    selectedAnchor:localStorage.getItem("selectedAnchor")||""
+  };
+}
+function localPost(action,payload={}){
+  if(action==="validate_phase1"){
+    if(normalize(payload.code)!==normalize(localStorage.getItem("phase1Code")||LOCAL_DEFAULTS.phase1Code))return Promise.resolve({ok:false,error:"INVALID_CODE"});
+    localStorage.setItem("convergenceState","PHASE1_COMPLETE");
+  }else if(action==="validate_phase2"){
+    if(normalize(payload.code)!==normalize(localStorage.getItem("phase2Code")||LOCAL_DEFAULTS.phase2Code))return Promise.resolve({ok:false,error:"INVALID_CODE"});
+    localStorage.setItem("convergenceState","CLEARED");
+  }else if(action==="override"){
+    if(normalize(payload.command)!==normalize(localStorage.getItem("finalCommand")||LOCAL_DEFAULTS.finalCommand))return Promise.resolve({ok:false,error:"INVALID_COMMAND"});
+    localStorage.setItem("convergenceState","RESOLVED");
+  }else if(action==="timeline_attempt"){
+    localStorage.setItem("selectedAnchor",payload.timeline||"");
+  }
+  return Promise.resolve({ok:true,state:localGet()});
+}
+async function apiGet(){
+  if(!remoteEnabled()) return localGet();
+  const r=await fetch(API_URL+"?t="+Date.now(),{cache:"no-store"});
+  return await r.json();
+}
+async function apiPost(action,payload={}){
+  if(!remoteEnabled()) return localPost(action,payload);
+  const r=await fetch(API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify({action,...payload})
+  });
+  return await r.json();
+}
+async function refreshState(){
+  try{
+    const s=await apiGet();
+    gameState={...gameState,...s};
+    render();
+  }catch(e){
+    $("online").textContent="● CONTROL LINK DEGRADED";
+  }
+}
+function setText(id,v){if($(id))$(id).textContent=v}
+function clearAction(){ $("actionArea").innerHTML=""; $("timelinePanel").classList.add("hidden"); $("countdownWrap").classList.add("hidden"); }
+function actionButton(label,cb){
+  const b=document.createElement("button"); b.textContent=label; b.onclick=cb; $("actionArea").appendChild(b);
+}
+function note(txt){ const s=document.createElement("span");s.className="phase-note";s.innerHTML=txt;$("actionArea").appendChild(s);}
+
+function render(){
+  const s=gameState.state||"WELCOME";
+  document.body.className="";
+  clearAction();
+  setText("eyebrow","INTERDIMENSIONAL EVENT ACTIVE");
+  setText("title","WELCOME TO THE CONVERGENCE");
+  setText("subtitle","SPACETIME SYNCHRONIZATION UNDER CONTROL");
+  setText("conv","STABLE"); setText("archive","PENDING"); setText("integrity","100.00%");
+  setText("frame","LOCKED"); setText("anchor","STANDBY"); setText("field","ACTIVE");
+
+  if(s==="WELCOME"){
+    note("ARCHIVE HANDSHAKE PENDING · VARIANT SIGNALS UNDER PASSIVE MONITORING");
+  }
+  if(s==="PHASE1"){
+    setText("eyebrow","ARCHIVE RECONSTRUCTION REQUIRED");
+    setText("title","MEMORY RECORD ANOMALY");
+    setText("subtitle","CORRUPTED PRE-CONVERGENCE ASSOCIATIONS DETECTED");
+    setText("archive","CORRUPTED"); setText("conv","STABLE"); setText("integrity","100.00%");
+    actionButton("ENTER ARCHIVE CODE",()=>openModal("PHASE1"));
+  }
+  if(s==="PHASE1_COMPLETE"){
+    setText("eyebrow","ARCHIVE RESTORED");
+    setText("title","FOUR TIMELINES DETECTED");
+    setText("subtitle","ANCHOR ANALYSIS AWAITING AUTHORIZATION");
+    setText("archive","VERIFIED"); setText("anchor","PENDING");
+    note("ASTRA · NOVA · VEGA · UMBRA");
+  }
+  if(s==="PHASE2"){
+    document.body.classList.add("phase2");
+    setText("eyebrow","ANCHOR PROTOCOL / CRITICAL ANALYSIS");
+    setText("title","TIMELINE CONFLICT");
+    setText("subtitle","MULTIPLE STABLE REFERENCE FRAMES DETECTED");
+    setText("archive","VERIFIED"); setText("conv","STRESSED"); setText("integrity","100.00%");
+    setText("frame","UNRESOLVED"); setText("anchor","ANALYZING");
+    $("systemLog").classList.add("active");
+    actionButton("ENTER ANCHOR PROTOCOL",()=>openModal("PHASE2"));
+    if(lastStateName!==s){plasmaBurst(18);toneBurst("phase2");}
+  } else $("systemLog").classList.remove("active");
+
+  if(s==="CLEARED"||s==="AUTO_ANCHOR"){
+    setText("eyebrow","ANCHOR PROTOCOL ACCEPTED");
+    setText("title","CONVERGENCE STABLE");
+    setText("subtitle",s==="AUTO_ANCHOR"?"AUTOMATIC REFERENCE ANCHOR ESTABLISHED":"PRIMARY REFERENCE ANCHOR ESTABLISHED");
+    setText("archive","VERIFIED");setText("conv","STABLE");setText("integrity","100.00%");
+    setText("frame","NOVA");setText("anchor","ACTIVE");
+    note("CASE CLOSED · ALL REGISTERED VARIANTS CLEARED");
+  }
+  if(s==="CASCADE"){
+    document.body.classList.add("cascade");
+    setText("eyebrow","EMERGENCY PROTOCOL ACTIVE");
+    setText("title","CASCADE FAILURE");
+    setText("subtitle","SINGLE-ANCHOR MODEL NO LONGER STABLE");
+    setText("archive","EMERGENCY");setText("conv","CRITICAL");setText("integrity","UNSTABLE");
+    setText("frame","DE-SYNCHRONIZED");setText("anchor","FAILED");
+    $("timelinePanel").classList.remove("hidden"); $("countdownWrap").classList.remove("hidden");
+    $("systemLog").classList.add("active");
+    startTimer();
+    if(lastStateName!==s){plasmaBurst(34);toneBurst("cascade");}
+  }
+  if(s==="RESOLVED"){
+    document.body.classList.add("resolved");
+    setText("eyebrow","DISTRIBUTED CONVERGENCE ESTABLISHED");
+    setText("title","MERRY CHRISTMAS");
+    setText("subtitle","ALL TIMELINES COEXIST");
+    setText("archive","VERIFIED");setText("conv","STABLE");setText("integrity","100.00%");
+    setText("frame","ALL TIMELINES");setText("anchor","DISTRIBUTED");
+    note("CASCADE TERMINATED · ALL VARIANTS PRESERVED");
+    stopAlarm();
+  }
+  updateAudioForState(s);
+  lastStateName=s;
+}
+
+function openModal(mode){
+  modalMode=mode;
+  $("modal").classList.toggle("critical",mode==="OVERRIDE");
+  $("modalEyebrow").textContent=mode==="OVERRIDE"?"ADVANCED EMERGENCY CONTROL":"CONTROL STATION REQUEST";
+  $("modalTitle").textContent=mode==="PHASE1"?"ENTER ARCHIVE RECONSTRUCTION CODE":mode==="PHASE2"?"ENTER ANCHOR PROTOCOL CODE":"MANUAL COMMAND OVERRIDE";
+  $("modalInput").value=""; $("modalFeedback").textContent="";
+  $("modalBackdrop").classList.remove("hidden");
+  setTimeout(()=>$("modalInput").focus(),80);
+}
+function closeModal(){ $("modalBackdrop").classList.add("hidden");modalMode=""; }
+async function submitModal(){
+  const v=$("modalInput").value;
+  let result;
+  if(modalMode==="PHASE1") result=await apiPost("validate_phase1",{code:v});
+  if(modalMode==="PHASE2") result=await apiPost("validate_phase2",{code:v});
+  if(modalMode==="OVERRIDE") result=await apiPost("override",{command:v});
+  if(result&&result.ok){
+    $("modalFeedback").textContent="COMMAND ACCEPTED.";
+    if(result.state) gameState={...gameState,...result.state};
+    setTimeout(()=>{closeModal();refreshState();},650);
+  }else{
+    $("modalFeedback").textContent=modalMode==="OVERRIDE"?"COMMAND REJECTED — CONFIGURATION UNSTABLE.":"INVALID PROTOCOL CODE.";
+    plasmaBurst(modalMode==="OVERRIDE"?12:5);
+    errorChirp();
+  }
+}
+$("modalSubmit").onclick=submitModal;
+$("modalInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitModal();if(e.key==="Escape")closeModal()});
+$("modalBackdrop").addEventListener("click",e=>{if(e.target===$("modalBackdrop"))closeModal()});
+$("manualOverride").onclick=()=>openModal("OVERRIDE");
+document.querySelectorAll(".timeline-card").forEach(b=>b.onclick=async()=>{
+  await apiPost("timeline_attempt",{timeline:b.dataset.timeline});
+  plasmaBurst(18); toneBurst("attempt");
+  openInfo(`${b.dataset.timeline} STABILIZATION FAILED`,`SINGLE-TIMELINE ANCHOR INCREASES CASCADE INSTABILITY.`);
+});
+function openInfo(title,msg){
+  modalMode="INFO"; $("modal").classList.add("critical");$("modalEyebrow").textContent="ANCHOR FAILURE";
+  $("modalTitle").textContent=title;$("modalInput").classList.add("hidden");$("modalSubmit").textContent="ACKNOWLEDGE";
+  $("modalFeedback").textContent=msg;$("modalBackdrop").classList.remove("hidden");
+  $("modalSubmit").onclick=()=>{ $("modalInput").classList.remove("hidden");$("modalSubmit").textContent="VALIDATE";$("modalSubmit").onclick=submitModal;closeModal(); };
+}
+
+function startTimer(){
+  clearInterval(timerHandle);
+  const mins=Number(gameState.timerMinutes||10);
+  let start=Number(gameState.cascadeStart||0);
+  if(!start&&!remoteEnabled()){start=Date.now();localStorage.setItem("cascadeStart",String(start));gameState.cascadeStart=start}
+  const tick=()=>{
+    const left=Math.max(0,mins*60000-(Date.now()-start));
+    const sec=Math.ceil(left/1000);
+    setText("timer",`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`);
+  };
+  tick();timerHandle=setInterval(tick,250);
+}
+setInterval(()=>setText("clock",new Date().toLocaleTimeString("it-IT",{hour12:false})),1000);
+setInterval(()=>{setText("drift","+"+(0.002+Math.random()*.003).toFixed(4)+"%");setText("systemCode","CX-"+Math.floor(1000+Math.random()*9000))},5000);
+
+/* Plasma canvas */
+const canvas=$("plasma"),ctx=canvas.getContext("2d");let bolts=[];
+function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}
+addEventListener("resize",resize);resize();
+function plasmaBurst(n=10){
+  const cx=innerWidth/2, cy=innerHeight*.41;
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, len=80+Math.random()*260;
+    bolts.push({x:cx,y:cy,a,len,life:1,w:1+Math.random()*2});
+  }
+}
+function draw(){
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  bolts.forEach(b=>{
+    ctx.beginPath();ctx.moveTo(b.x,b.y);
+    let x=b.x,y=b.y;const seg=7;
+    for(let s=1;s<=seg;s++){
+      const d=b.len*s/seg;x=b.x+Math.cos(b.a)*d+(Math.random()-.5)*24;y=b.y+Math.sin(b.a)*d+(Math.random()-.5)*24;ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle=`rgba(255,70,105,${Math.max(0,b.life)*.62})`;ctx.lineWidth=b.w;ctx.shadowBlur=14;ctx.shadowColor="#ff365b";ctx.stroke();b.life-=.035;
+  });
+  bolts=bolts.filter(b=>b.life>0);
+  if((document.body.classList.contains("phase2")||document.body.classList.contains("cascade"))&&Math.random()<.025)plasmaBurst(document.body.classList.contains("cascade")?4:2);
+  requestAnimationFrame(draw);
+} draw();
+
+/* system log */
+const logLines=[
+ "REFERENCE FRAME Δψ EXCEEDS TOLERANCE","PLASMA SHEAR EVENT DETECTED","ANCHOR VECTOR RECOMPUTING",
+ "TIMELINE PHASE NOISE ABOVE BASELINE","ARCHIVE CROSS-CHECK COMPLETE","NONLOCAL COHERENCE FLUCTUATION",
+ "SINGLE-ANCHOR SOLUTION REMAINS INCONCLUSIVE","SPACETIME NODE C-2026.12 RESPONSE DELAY"
+];
+setInterval(()=>{
+ if(!$("systemLog").classList.contains("active"))return;
+ const d=document.createElement("div");d.textContent=`[${new Date().toLocaleTimeString("it-IT",{hour12:false})}.${Math.floor(Math.random()*999).toString().padStart(3,"0")}] ${logLines[Math.floor(Math.random()*logLines.length)]}`;
+ $("systemLog").prepend(d);while($("systemLog").children.length>4)$("systemLog").lastChild.remove();
+},900);
+
+/* Audio */
+function initAudio(){
+ if(audioReady)return;
+ audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+ masterGain=audioCtx.createGain();masterGain.gain.value=.10;masterGain.connect(audioCtx.destination);
+ humGain=audioCtx.createGain();humGain.gain.value=.035;humGain.connect(masterGain);
+ humOsc1=audioCtx.createOscillator();humOsc1.type="sine";humOsc1.frequency.value=54;humOsc1.connect(humGain);humOsc1.start();
+ humOsc2=audioCtx.createOscillator();humOsc2.type="sine";humOsc2.frequency.value=81;humOsc2.connect(humGain);humOsc2.start();
+ alarmGain=audioCtx.createGain();alarmGain.gain.value=0;alarmGain.connect(masterGain);
+ alarmOsc=audioCtx.createOscillator();alarmOsc.type="sawtooth";alarmOsc.frequency.value=110;alarmOsc.connect(alarmGain);alarmOsc.start();
+ audioReady=true;$("audioBtn").textContent="AUDIO ONLINE";$("muteBtn").classList.remove("hidden");updateAudioForState(gameState.state);
+}
+function updateAudioForState(s){
+ if(!audioReady)return;
+ const now=audioCtx.currentTime;
+ humGain.gain.cancelScheduledValues(now);alarmGain.gain.cancelScheduledValues(now);
+ humGain.gain.linearRampToValueAtTime(s==="PHASE2"?.055:s==="CASCADE"?.065:.028,now+.4);
+ alarmGain.gain.linearRampToValueAtTime(s==="PHASE2"?.012:s==="CASCADE"?.028:0,now+.35);
+}
+function toneBurst(type){
+ if(!audioReady||muted)return;
+ const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(masterGain);
+ o.type=type==="cascade"?"square":"sawtooth";o.frequency.setValueAtTime(type==="cascade"?160:220,audioCtx.currentTime);
+ o.frequency.exponentialRampToValueAtTime(type==="attempt"?70:90,audioCtx.currentTime+.45);
+ g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.5);o.start();o.stop(audioCtx.currentTime+.55);
+}
+function errorChirp(){toneBurst("attempt")}
+function stopAlarm(){if(audioReady)alarmGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.3)}
+$("audioBtn").onclick=initAudio;
+$("muteBtn").onclick=()=>{muted=!muted;if(audioReady)masterGain.gain.value=muted?0:.10;$("muteBtn").textContent=muted?"UNMUTE":"MUTE"};
+
+window.addEventListener("storage",refreshState);
+refreshState();
+pollHandle=setInterval(refreshState,remoteEnabled()?1500:1200);
+</script>
+</body>
+</html>
