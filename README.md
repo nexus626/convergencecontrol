@@ -113,18 +113,3 @@ QR partecipanti:
 
 ## v6.1
 - Finale: `CONVERGENCE RESTORED` e `MERRY CHRISTMAS` sono ora visualizzati entrambi come titolo principale, con la stessa dimensione.
-
-
-## SAFE V7 rebuilt from last known working package
-Questa versione parte direttamente dal pacchetto funzionante fornito dall'utente.
-Non modifica il flusso principale di gioco, Master Control, Archive Code o struttura degli stati.
-
-Aggiunge soltanto:
-- voce WARNING solo se è disponibile una voce realmente inglese;
-- sirena più profonda di tipo industriale/civil-defense;
-- transizione finale indipendente rosso → arancio → giallo → ciano → blu;
-- neve;
-- lampadine natalizie sul perimetro;
-- breve medley natalizio sintetizzato dal browser.
-
-Il pulsante `ENTER ARCHIVE RECONSTRUCTION CODE` e il Master Control restano quelli della baseline funzionante.
