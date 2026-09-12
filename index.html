@@ -580,7 +580,7 @@ function initAudio(){
   audioCtx=new (window.AudioContext||window.webkitAudioContext)();
 
   masterGain=audioCtx.createGain();
-  masterGain.gain.value=.22;
+  masterGain.gain.value=.28;
   masterGain.connect(audioCtx.destination);
 
   humGain=audioCtx.createGain();
@@ -634,7 +634,7 @@ function playTone(freq,dur=.2,vol=.16,type="sine",freq2=null){
   o.stop(audioCtx.currentTime+dur+.03);
 }
 
-function noiseBurst(vol=.08,dur=.14){
+function noiseBurst(vol=.10,dur=.14,center=1200){
   if(!audioReady||muted)return;
 
   const buffer=audioCtx.createBuffer(
@@ -655,7 +655,7 @@ function noiseBurst(vol=.08,dur=.14){
 
   src.buffer=buffer;
   f.type="bandpass";
-  f.frequency.value=850+Math.random()*1400;
+  f.frequency.value=center;
   f.Q.value=1.1;
   g.gain.value=vol;
 
@@ -666,45 +666,81 @@ function noiseBurst(vol=.08,dur=.14){
   src.start();
 }
 
+/* Stronger plasma crackle so it stays audible over alarms. */
+function plasmaGlitch(){
+  if(!audioReady||muted)return;
+
+  noiseBurst(.20,.11,1500);
+
+  setTimeout(()=>{
+    noiseBurst(.14,.08,2400);
+  },55);
+
+  playTone(
+    500 + Math.random()*140,
+    .10,
+    .13,
+    "square",
+    190 + Math.random()*90
+  );
+
+  setTimeout(()=>{
+    playTone(
+      175 + Math.random()*40,
+      .14,
+      .11,
+      "sawtooth",
+      105
+    );
+  },35);
+}
+
 /*
-  Deep industrial / ship-horn style blast.
-  Fundamental is deliberately low, with strong audible harmonics so that
-  laptop/TV speakers still reproduce the alarm without becoming shrill.
+  Audible industrial / ship horn.
+  This version keeps a low character but moves important harmonics
+  into a range that laptop, TV and portable speakers can reproduce.
 */
 function deepHornBlast(duration=2.0){
-  if(!audioReady)return;
+  if(!audioReady||muted)return;
 
   const now=audioCtx.currentTime;
 
   const hornBus=audioCtx.createGain();
-  const lowPass=audioCtx.createBiquadFilter();
+  const hornFilter=audioCtx.createBiquadFilter();
+  const presence=audioCtx.createBiquadFilter();
   const compressor=audioCtx.createDynamicsCompressor();
 
-  lowPass.type="lowpass";
-  lowPass.frequency.setValueAtTime(620,now);
-  lowPass.Q.value=.72;
+  hornFilter.type="lowpass";
+  hornFilter.frequency.setValueAtTime(1050,now);
+  hornFilter.Q.value=.6;
 
-  compressor.threshold.value=-18;
-  compressor.knee.value=14;
-  compressor.ratio.value=4;
-  compressor.attack.value=.01;
-  compressor.release.value=.35;
+  presence.type="peaking";
+  presence.frequency.setValueAtTime(390,now);
+  presence.Q.value=.85;
+  presence.gain.value=6;
 
-  hornBus.connect(lowPass);
-  lowPass.connect(compressor);
+  compressor.threshold.value=-20;
+  compressor.knee.value=12;
+  compressor.ratio.value=4.5;
+  compressor.attack.value=.008;
+  compressor.release.value=.32;
+
+  hornBus.connect(hornFilter);
+  hornFilter.connect(presence);
+  presence.connect(compressor);
   compressor.connect(masterGain);
 
-  // Slow attack + sustained blast + slow release = horn, not violin/synth beep.
   hornBus.gain.setValueAtTime(.0001,now);
-  hornBus.gain.exponentialRampToValueAtTime(.66,now+.16);
-  hornBus.gain.setValueAtTime(.66,now+Math.max(.28,duration-.38));
+  hornBus.gain.exponentialRampToValueAtTime(.78,now+.12);
+  hornBus.gain.setValueAtTime(.78,now+Math.max(.24,duration-.34));
   hornBus.gain.exponentialRampToValueAtTime(.0001,now+duration);
 
   const partials=[
-    {freq:98.0,  type:"sine",     gain:.56, detune:-3},
-    {freq:147.0, type:"triangle", gain:.34, detune: 2},
-    {freq:196.0, type:"triangle", gain:.25, detune:-2},
-    {freq:294.0, type:"sine",     gain:.12, detune: 4}
+    {freq:180, type:"sawtooth", gain:.22, detune:-2},
+    {freq:240, type:"triangle", gain:.42, detune: 1},
+    {freq:360, type:"triangle", gain:.36, detune:-1},
+    {freq:480, type:"sine",     gain:.27, detune: 2},
+    {freq:720, type:"sine",     gain:.11, detune:-2}
   ];
 
   partials.forEach(p=>{
@@ -716,10 +752,8 @@ function deepHornBlast(duration=2.0){
     o.detune.setValueAtTime(p.detune,now);
     g.gain.value=p.gain;
 
-    // Tiny slow pitch movement adds mechanical horn character
-    // without making it a high-pitched siren sweep.
-    o.frequency.linearRampToValueAtTime(p.freq*1.018,now+duration*.42);
-    o.frequency.linearRampToValueAtTime(p.freq*.992,now+duration);
+    o.frequency.linearRampToValueAtTime(p.freq*1.010,now+duration*.45);
+    o.frequency.linearRampToValueAtTime(p.freq*.996,now+duration);
 
     o.connect(g);
     g.connect(hornBus);
@@ -730,30 +764,12 @@ function deepHornBlast(duration=2.0){
     activeHornNodes.push(o);
   });
 
-  // Low rumble component for physical weight.
-  const rumble=audioCtx.createOscillator();
-  const rumbleGain=audioCtx.createGain();
-
-  rumble.type="sine";
-  rumble.frequency.setValueAtTime(49,now);
-  rumbleGain.gain.value=.18;
-
-  rumble.connect(rumbleGain);
-  rumbleGain.connect(hornBus);
-
-  rumble.start(now);
-  rumble.stop(now+duration+.05);
-
-  activeHornNodes.push(rumble);
-
   setTimeout(()=>{
     try{hornBus.disconnect()}catch(e){}
-    try{lowPass.disconnect()}catch(e){}
+    try{hornFilter.disconnect()}catch(e){}
+    try{presence.disconnect()}catch(e){}
     try{compressor.disconnect()}catch(e){}
-    activeHornNodes=activeHornNodes.filter(n=>{
-      try{return n.context && n.context.state!=="closed"}catch(e){return false}
-    });
-  },(duration+.25)*1000);
+  },(duration+.3)*1000);
 }
 
 function clearHornTimers(){
@@ -777,18 +793,8 @@ function stopHornPattern(){
   hornMode=null;
 }
 
-/*
-  One alarm battery:
-  2.0 s horn
-  0.5 s pause
-  2.0 s horn
-  0.5 s pause
-  2.0 s horn
-
-  Total battery length: 7.0 s
-*/
 function playHornBattery(){
-  if(!audioReady)return;
+  if(!audioReady||muted)return;
 
   deepHornBlast(2.0);
 
@@ -802,26 +808,24 @@ function playHornBattery(){
 }
 
 function startPhase2Horn(){
-  if(!audioReady)return;
+  if(!audioReady||muted)return;
   if(hornMode==="phase2")return;
 
   stopHornPattern();
   hornMode="phase2";
-
   playHornBattery();
 }
 
 function startCascadeHorn(){
-  if(!audioReady)return;
+  if(!audioReady||muted)return;
   if(hornMode==="cascade")return;
 
   stopHornPattern();
   hornMode="cascade";
 
-  // Immediate 3-blast battery.
   playHornBattery();
 
-  // Battery lasts 7 s; wait another 3 s, then repeat.
+  /* 7 s battery + 3 s silence */
   phase3BatteryInterval=setInterval(()=>{
     if(game.state!=="CASCADE"){
       stopHornPattern();
@@ -831,7 +835,6 @@ function startCascadeHorn(){
   },10000);
 }
 
-/* Compatibility name used by the existing RESOLVED render logic. */
 function stopSiren(){
   stopHornPattern();
 }
@@ -841,8 +844,6 @@ function getApprovedEnglishVoice(){
 
   const voices = window.speechSynthesis.getVoices();
 
-  // Only use known natural/system voices.
-  // If none are available, stay silent rather than risk spelling characters.
   const preferredNames = [
     "Google US English",
     "Google UK English Female",
@@ -864,7 +865,6 @@ function getApprovedEnglishVoice(){
     if(exact) return exact;
   }
 
-  // Conservative fallback: still require a clearly natural Microsoft/Google voice.
   const naturalFallback = voices.find(v => {
     const n = (v.name || "").toLowerCase();
     const lang = (v.lang || "").toLowerCase();
@@ -885,34 +885,40 @@ function getApprovedEnglishVoice(){
   return naturalFallback || null;
 }
 
-function speakWarning(){
+function speakEnglishAlert(message){
   if(muted || !("speechSynthesis" in window)) return;
 
-  const v = getApprovedEnglishVoice();
+  const v=getApprovedEnglishVoice();
   if(!v) return;
 
   window.speechSynthesis.cancel();
 
-  const u = new SpeechSynthesisUtterance(
-    "Warning. Primary anchor instability."
-  );
-
-  u.voice = v;
-  u.lang = v.lang || "en-US";
-  u.rate = 0.82;
-  u.pitch = 0.72;
-  u.volume = 1;
+  const u=new SpeechSynthesisUtterance(message);
+  u.voice=v;
+  u.lang=v.lang || "en-US";
+  u.rate=.82;
+  u.pitch=.72;
+  u.volume=1;
 
   window.speechSynthesis.speak(u);
 }
 
+function speakTimelineConflict(){
+  speakEnglishAlert("Warning. Timeline conflict.");
+}
+
+function speakPrimaryAnchorWarning(){
+  speakEnglishAlert("Warning. Primary anchor instability.");
+}
+
 function startVoiceLoop(){
   stopVoiceLoop();
-  speakWarning();
+
+  speakPrimaryAnchorWarning();
 
   voiceLoopHandle=setInterval(()=>{
     if(game.state==="CASCADE"){
-      speakWarning();
+      speakPrimaryAnchorWarning();
     }
   },9000);
 }
@@ -935,7 +941,7 @@ function confirmTone(){
 
 function errorTone(){
   playTone(210,.28,.16,"sawtooth",85);
-  noiseBurst(.09,.18);
+  noiseBurst(.12,.18,900);
 }
 
 function audioEvent(type){
@@ -943,7 +949,9 @@ function audioEvent(type){
 
   if(type==="phase2_entry"){
     startPhase2Horn();
-    speakWarning();
+
+    /* Phase 2: one spoken warning only */
+    speakTimelineConflict();
   }
 
   if(type==="cascade_entry"){
@@ -953,10 +961,11 @@ function audioEvent(type){
 
   if(type==="attempt"){
     errorTone();
+    plasmaGlitch();
   }
 
   if(type==="plasma"){
-    noiseBurst(.06,.10);
+    plasmaGlitch();
   }
 }
 
@@ -967,15 +976,20 @@ function updateAudioState(s){
 
   humGain.gain.cancelScheduledValues(now);
   humGain.gain.linearRampToValueAtTime(
-    s==="PHASE2" ? .055 :
-    s==="CASCADE" ? .072 :
-    .035,
+    s==="PHASE2" ? .05 :
+    s==="CASCADE" ? .06 :
+    .032,
     now+.4
   );
 
   if(s==="PHASE2"){
     startPhase2Horn();
-    stopVoiceLoop();
+
+    /* Never repeat voice in Phase 2 */
+    if(voiceLoopHandle){
+      clearInterval(voiceLoopHandle);
+      voiceLoopHandle=null;
+    }
   }
   else if(s==="CASCADE"){
     startCascadeHorn();
@@ -995,7 +1009,7 @@ $("audioBtn").onclick=initAudio;
 $("muteBtn").onclick=()=>{
   muted=!muted;
 
-  masterGain.gain.value=muted ? 0 : .22;
+  masterGain.gain.value=muted ? 0 : .28;
 
   text(
     "muteBtn",
@@ -1004,11 +1018,10 @@ $("muteBtn").onclick=()=>{
 
   if(muted){
     stopVoiceLoop();
+    stopHornPattern();
   }
-  else if(game.state==="CASCADE"){
-    if(!voiceLoopHandle){
-      startVoiceLoop();
-    }
+  else{
+    updateAudioState(game.state);
   }
 };
 
