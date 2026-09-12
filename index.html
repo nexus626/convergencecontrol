@@ -610,6 +610,85 @@ body.settling #actionArea{
   100%{opacity:1;transform:translateY(0);filter:blur(0)}
 }
 
+
+/* =========================================================
+   TRUE STATE TRANSITION CURTAIN
+   Remains independent from the 1 s state refresh.
+   ========================================================= */
+.state-curtain{
+  position:fixed;
+  inset:0;
+  z-index:72;
+  pointer-events:none;
+  opacity:0;
+  visibility:hidden;
+  background:
+    radial-gradient(circle at center,
+      rgba(7,24,37,.94) 0%,
+      rgba(2,8,16,.97) 54%,
+      rgba(0,2,7,.995) 100%);
+  transition:
+    opacity .72s cubic-bezier(.22,.61,.36,1),
+    visibility .72s linear;
+}
+
+.state-curtain.cover{
+  opacity:1;
+  visibility:visible;
+}
+
+.state-curtain.reveal{
+  opacity:0;
+  visibility:visible;
+  transition:
+    opacity 1.65s cubic-bezier(.16,1,.3,1),
+    visibility 1.65s linear;
+}
+
+.state-curtain.resolve-phase1{
+  background:
+    radial-gradient(circle at center,
+      rgba(21,77,102,.94) 0%,
+      rgba(3,20,31,.97) 50%,
+      rgba(0,3,8,.995) 100%);
+}
+
+.state-curtain.resolve-phase2{
+  background:
+    radial-gradient(circle at center,
+      rgba(86,28,13,.92) 0%,
+      rgba(14,32,37,.97) 52%,
+      rgba(0,4,8,.995) 100%);
+}
+
+.state-curtain.resolve-final{
+  background:
+    radial-gradient(circle at center,
+      rgba(105,8,24,.94) 0%,
+      rgba(28,8,17,.97) 44%,
+      rgba(1,3,8,.995) 100%);
+}
+
+/* Make warning arrival/departure itself smooth. */
+.phase-warning{
+  transition:
+    opacity .58s cubic-bezier(.22,.61,.36,1),
+    visibility .58s linear;
+}
+
+.phase-warning .phase-warning-box{
+  opacity:0;
+  transform:scale(.965);
+  transition:
+    opacity .58s ease,
+    transform .78s cubic-bezier(.16,1,.3,1);
+}
+
+.phase-warning.active .phase-warning-box{
+  opacity:1;
+  transform:scale(1);
+}
+
 @media(max-width:900px){main{grid-template-columns:1fr}aside{display:none}.status{width:94vw}.cascade-grid{width:96vw;grid-template-columns:1fr}.cascade-log{display:none}.timeline-panel{width:94vw}.timeline-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -617,6 +696,7 @@ body.settling #actionArea{
 <canvas id="plasma"></canvas>
 <div id="glitchLayer" class="glitch-layer"></div>
 <div id="resolutionAtmosphere" class="resolution-atmosphere"></div>
+<div id="stateCurtain" class="state-curtain"></div>
 
 <div class="screen">
 <header>
@@ -750,6 +830,9 @@ const norm=s=>(s||"").trim().replace(/\s+/g," ").toUpperCase();
 const remote=()=>/^https:\/\/script\.google\.com\//.test(API_URL);
 
 let game={state:"WELCOME",timerMinutes:10,cascadeStart:0,stateChangedAt:0,selectedAnchor:""};
+let refreshBusy=false;
+let transitionBusy=false;
+let resolvedVisualStart=0;
 let lastState="";
 let modalMode="";
 let timerHandle=null,phase2LogHandle=null,cascadeLogHandle=null;
@@ -907,7 +990,7 @@ function resetResolvedTransitionVisuals(){
 }
 
 function applyResolvedTransition(){
-  const changedAt=Number(game.stateChangedAt||Date.now());
+  const changedAt=Number(resolvedVisualStart||game.stateChangedAt||Date.now());
   const elapsed=Math.max(0,Date.now()-changedAt);
 
   setFestiveOverlay(true);
@@ -1028,6 +1111,65 @@ function applyResolvedTransition(){
 }
 
 
+
+function sleep(ms){
+  return new Promise(resolve=>setTimeout(resolve,ms));
+}
+
+function solvedTransitionType(fromState,toState){
+  if(toState==="PHASE1_COMPLETE")return "resolve-phase1";
+  if(fromState==="PHASE2" && toState==="CLEARED")return "resolve-phase2";
+  if(fromState==="CASCADE" && toState==="RESOLVED")return "resolve-final";
+  return "";
+}
+
+async function renderThroughCurtain(nextGame,type){
+  if(transitionBusy)return;
+  transitionBusy=true;
+
+  const curtain=$("stateCurtain");
+
+  if(!curtain){
+    game={...game,...nextGame};
+    render();
+    transitionBusy=false;
+    return;
+  }
+
+  curtain.className=`state-curtain ${type}`;
+  void curtain.offsetWidth;
+  curtain.classList.add("cover");
+
+  /*
+    Let the current state genuinely fade away first.
+    Only then do we swap the underlying game screen.
+  */
+  await sleep(720);
+
+  game={...game,...nextGame};
+
+  if(nextGame.state==="RESOLVED"){
+    resolvedVisualStart=Date.now();
+  }
+
+  render();
+
+  /*
+    A tiny hold avoids exposing the DOM swap,
+    then the new state is gradually revealed.
+  */
+  await sleep(90);
+
+  curtain.classList.remove("cover");
+  curtain.classList.add("reveal");
+
+  await sleep(1680);
+
+  curtain.className="state-curtain";
+  transitionBusy=false;
+}
+
+
 /* local / remote state */
 function localState(){
   return {
@@ -1070,7 +1212,29 @@ async function post(action,data={}){
   return await r.json();
 }
 async function refresh(){
-  try{game={...game,...await getState()};render()}catch(e){$("online").textContent="● CONTROL LINK DEGRADED"}
+  if(refreshBusy || transitionBusy)return;
+  refreshBusy=true;
+
+  try{
+    const incoming=await getState();
+    const nextGame={...game,...incoming};
+    const currentDisplayed=lastState || game.state || "";
+    const nextState=nextGame.state || "WELCOME";
+    const transitionType=solvedTransitionType(currentDisplayed,nextState);
+
+    if(lastState && currentDisplayed!==nextState && transitionType){
+      refreshBusy=false;
+      await renderThroughCurtain(nextGame,transitionType);
+      return;
+    }
+
+    game=nextGame;
+    render();
+  }catch(e){
+    $("online").textContent="● CONTROL LINK DEGRADED";
+  }finally{
+    refreshBusy=false;
+  }
 }
 
 /* base rendering */
@@ -1214,6 +1378,13 @@ function showPhaseWarningFor(state){
 
   phaseWarningTimer=setTimeout(()=>{
     $("phaseWarning").classList.remove("active");
+
+    setTimeout(()=>{
+      if(!$("phaseWarning").classList.contains("active")){
+        $("phaseWarning").classList.add("hidden");
+      }
+    },620);
+
     phaseWarningTimer=null;
 
     if(game.state==="PHASE2"){
@@ -1583,6 +1754,11 @@ function triggerNovaTransition(previousState,currentState){
 function render(){
   const rawState=game.state||"WELCOME";
   const s=rawState==="AUTO_ANCHOR" ? "PHASE1_COMPLETE" : rawState;
+
+  if(s!=="RESOLVED"){
+    resolvedVisualStart=0;
+  }
+
   baseDefault();
 
   if(s==="WELCOME"){
@@ -1628,6 +1804,7 @@ function render(){
   } else stopCascadeLogs();
 
   if(s==="RESOLVED"){
+    if(!resolvedVisualStart)resolvedVisualStart=Date.now();
     document.body.classList.add("resolved");
     text("eyebrow","DISTRIBUTED CONVERGENCE ESTABLISHED");
     $("title").innerHTML='<span class="title-line">CONVERGENCE RESTORED</span><span class="title-line">MERRY CHRISTMAS</span>';
@@ -1697,7 +1874,6 @@ async function submitModal(){
 
   if(r&&r.ok){
     $("modalFeedback").textContent="COMMAND ACCEPTED.";
-    if(r.state)game={...game,...r.state};
     confirmTone();
     setTimeout(()=>{closeModal();refresh()},600);
   } else {
